@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Data files
+*.npy
+*.bin
+*.index
+*.db
+*.sqlite
+data/raw/*.json
+data/raw/*.csv
+data/processed/
+data/embeddings/
+data/indices/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Conda
+*.conda
+.conda/

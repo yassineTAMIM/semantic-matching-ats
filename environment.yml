@@ -1,0 +1,22 @@
+name: matching-ats
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - numpy=1.24
+  - pandas=2.0
+  - scikit-learn=1.3
+  - pip
+  - pip:
+    - sentence-transformers==2.2.2
+    - transformers==4.35.0
+    - faiss-cpu==1.7.4
+    - streamlit==1.28.2
+    - fastapi==0.104.1
+    - uvicorn==0.24.0
+    - pydantic==2.5.0
+    - python-dateutil==2.8.2
+    - tqdm==4.66.1
+    - pytest==7.4.3
+    - black==23.11.0
