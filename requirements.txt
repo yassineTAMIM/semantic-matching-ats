@@ -2,12 +2,11 @@
 sentence-transformers==2.2.2
 transformers==4.35.0
 
-# Data Processing (will install via conda)
-# pandas
-# numpy
-# scikit-learn
+# Data Processing
+datasets==2.14.6
+pyarrow==12.0.1   
 
-# Vector Search (CPU version)
+# Vector Search
 faiss-cpu==1.7.4
 
 # Web Framework
