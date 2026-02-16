@@ -1,0 +1,87 @@
+MATCHING ENGINE UNIT TESTS LOG
+================================================================================
+Timestamp: 2026-02-16 14:14:43
+================================================================================
+
+[14:14:43] [INFO] 
+================================================================================
+[14:14:43] [INFO] TEST SETUP
+[14:14:43] [INFO] ================================================================================
+[14:14:47] [SUCCESS] Matching engine initialized successfully
+[14:14:47] [SUCCESS] Loaded 51 jobs and 1000 candidates
+[14:14:47] [INFO] 
+================================================================================
+[14:14:47] [INFO] TEST: Skills Scoring Function
+[14:14:47] [INFO] ================================================================================
+[14:14:47] [PASS] ✓ Perfect skills match: Expected 1.0, got 1.0000
+[14:14:47] [PASS] ✓ Partial skills match (50%): Expected ~0.5, got 0.5000
+[14:14:47] [PASS] ✓ No skills match: Expected <0.3, got 0.0000
+[14:14:47] [PASS] ✓ Case-insensitive matching: Expected 1.0, got 1.0000
+[14:14:47] [PASS] ✓ No required skills (should be 1.0): Expected 1.0, got 1.0000
+[14:14:47] [INFO] 
+================================================================================
+[14:14:47] [INFO] TEST: Experience Scoring Function
+[14:14:47] [INFO] ================================================================================
+[14:14:47] [PASS] ✓ Experience within range: Expected 1.0, got 1.0000
+[14:14:47] [PASS] ✓ Experience at minimum: Expected 1.0, got 1.0000
+[14:14:47] [PASS] ✓ Slightly under-qualified: Expected 0.6-1.0, got 0.9460
+[14:14:47] [PASS] ✓ Significantly under-qualified: Expected <0.3, got 0.2494
+[14:14:47] [PASS] ✓ Over-qualified: Expected <1.0, got 0.0003
+[14:14:47] [INFO] 
+================================================================================
+[14:14:47] [INFO] TEST: Location Scoring Function
+[14:14:47] [INFO] ================================================================================
+[14:14:47] [PASS] ✓ Exact location match: Expected 1.0, got 1.0000
+[14:14:47] [PASS] ✓ Remote job (any location): Expected 1.0, got 1.0000
+[14:14:47] [PASS] ✓ Remote candidate for office job: Expected >=0.6, got 0.8000
+[14:14:47] [PASS] ✓ Different locations: Expected <0.5, got 0.2000
+[14:14:47] [INFO] 
+================================================================================
+[14:14:47] [INFO] TEST: Weighted Total Scoring
+[14:14:47] [INFO] ================================================================================
+[14:14:47] [PASS] ✓ Weights sum to 1.0: Expected 1.0, got 1.000000
+[14:14:47] [PASS] ✓ Weighted score calculation: Expected 0.8310, got 0.8310
+[14:14:47] [INFO] 
+================================================================================
+[14:14:47] [INFO] TEST: End-to-End Matching
+[14:14:47] [INFO] ================================================================================
+[14:14:47] [PASS] ✓ Returns matching results: Got 10 matches
+[14:14:47] [PASS] ✓ Returns requested number of results: Requested 10, got 10
+[14:14:47] [PASS] ✓ Results sorted by score (descending): Scores: ['0.686', '0.669', '0.654', '0.654', '0.654']
+[14:14:47] [PASS] ✓ All scores in range [0,1]: Range: [0.624, 0.686]
+[14:14:47] [PASS] ✓ Performance < 5 seconds: Took 0.10s
+[14:14:47] [PASS] ✓ All required fields present: Fields: ['candidate', 'scores', 'breakdown']
+[14:14:47] [INFO] 
+================================================================================
+[14:14:47] [INFO] TEST: Filtering Functionality
+[14:14:47] [INFO] ================================================================================
+[14:14:47] [PASS] ✓ Location filtering works: All 10 matches have valid locations
+[14:14:47] [PASS] ✓ Experience filtering works: All 10 matches have 5-10 years experience
+[14:14:47] [INFO] 
+================================================================================
+[14:14:47] [INFO] TEST: Edge Cases
+[14:14:47] [INFO] ================================================================================
+[14:14:47] [PASS] ✓ Handles empty candidate skills: Score: 0.0000
+[14:14:47] [PASS] ✓ Handles extreme experience values: Score: 0.0000
+[14:14:47] [INFO] 
+================================================================================
+[14:14:47] [INFO] TEST: Score Breakdown
+[14:14:47] [INFO] ================================================================================
+[14:14:47] [PASS] ✓ All breakdown components present: Components: ['semantic_similarity', 'skills_match', 'experience_match', 'location_match']
+[14:14:47] [PASS] ✓ Skills breakdown has matched and missing: Has matched: True, Has missing: True
+[14:14:47] [INFO] 
+================================================================================
+[14:14:47] [INFO] TEST SUMMARY
+[14:14:47] [INFO] ================================================================================
+[14:14:47] [INFO] Total Tests Run: 28
+[14:14:47] [INFO] Passed: 28
+[14:14:47] [INFO] Failed: 0
+[14:14:47] [INFO] Pass Rate: 100.0%
+[14:14:47] [INFO] 
+========================================
+[14:14:47] [SUCCESS] ALL TESTS PASSED ✓
+[14:14:47] [INFO] ========================================
+[14:14:47] [INFO] 
+================================================================================
+[14:14:47] [INFO] Unit tests complete. Log saved to: logs\matching_engine_tests.txt
+[14:14:47] [INFO] ================================================================================

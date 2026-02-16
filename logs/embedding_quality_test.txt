@@ -1,0 +1,120 @@
+EMBEDDING QUALITY ASSESSMENT LOG
+================================================================================
+Timestamp: 2026-02-16 14:14:43
+================================================================================
+
+[14:14:43] [INFO] 
+================================================================================
+[14:14:43] [INFO] LOADING EMBEDDINGS AND METADATA
+[14:14:43] [INFO] ================================================================================
+[14:14:43] [SUCCESS] Loaded 1000 candidate embeddings (384 dims)
+[14:14:43] [SUCCESS] Loaded 50 job embeddings (384 dims)
+[14:14:43] [SUCCESS] Loaded candidate and job metadata
+[14:14:43] [INFO] 
+================================================================================
+[14:14:43] [INFO] VALIDATING EMBEDDING PROPERTIES
+[14:14:43] [INFO] ================================================================================
+[14:14:43] [SUCCESS] Candidate embedding dimension: 384 ✓
+[14:14:43] [SUCCESS] Job embedding dimension: 384 ✓
+[14:14:43] [SUCCESS] Candidate embeddings: No NaN/Inf values ✓
+[14:14:43] [SUCCESS] Job embeddings: No NaN/Inf values ✓
+[14:14:43] [INFO] 
+Candidate embedding norms:
+[14:14:43] [INFO]   Mean: 1.000000
+[14:14:43] [INFO]   Std: 0.000000
+[14:14:43] [INFO]   Min: 1.000000
+[14:14:43] [INFO]   Max: 1.000000
+[14:14:43] [SUCCESS]   Status: Normalized ✓
+[14:14:43] [INFO] 
+Job embedding norms:
+[14:14:43] [INFO]   Mean: 1.000000
+[14:14:43] [INFO]   Std: 0.000000
+[14:14:43] [INFO]   Min: 1.000000
+[14:14:43] [INFO]   Max: 1.000000
+[14:14:43] [SUCCESS]   Status: Normalized ✓
+[14:14:43] [INFO] 
+================================================================================
+[14:14:43] [INFO] ANALYZING EMBEDDING DISTRIBUTIONS
+[14:14:43] [INFO] ================================================================================
+[14:14:43] [INFO] 
+Candidate Embedding Statistics:
+[14:14:43] [INFO]   Mean: -0.001165
+[14:14:43] [INFO]   Std: 0.051018
+[14:14:43] [INFO]   Min: -0.220434
+[14:14:43] [INFO]   Max: 0.218813
+[14:14:43] [INFO]   Median: -0.000682
+[14:14:43] [INFO] 
+Job Embedding Statistics:
+[14:14:43] [INFO]   Mean: -0.001518
+[14:14:43] [INFO]   Std: 0.051008
+[14:14:43] [INFO]   Min: -0.182324
+[14:14:43] [INFO]   Max: 0.200878
+[14:14:43] [INFO]   Median: -0.002067
+[14:14:43] [INFO] 
+================================================================================
+[14:14:43] [INFO] ANALYZING SIMILARITY DISTRIBUTIONS
+[14:14:43] [INFO] ================================================================================
+[14:14:43] [INFO] Computing pairwise similarities for 200 samples...
+[14:14:43] [INFO] 
+Pairwise Similarity Statistics:
+[14:14:43] [INFO]   Mean: 0.6605
+[14:14:43] [INFO]   Std: 0.0720
+[14:14:43] [INFO]   Min: 0.4034
+[14:14:43] [INFO]   Max: 0.9299
+[14:14:43] [INFO]   Median: 0.6584
+[14:14:43] [INFO]   25th percentile: 0.6111
+[14:14:43] [INFO]   75th percentile: 0.7095
+[14:14:43] [INFO]   90th percentile: 0.7550
+[14:14:43] [SUCCESS] Similarity distribution looks healthy
+[14:14:43] [INFO] 
+================================================================================
+[14:14:43] [INFO] TESTING SEMANTIC CLUSTERING
+[14:14:43] [INFO] ================================================================================
+[14:14:43] [INFO] Analyzing clustering for 8 service lines...
+[14:14:43] [INFO] 
+Clustering Quality:
+[14:14:43] [INFO]   Intra-cluster similarity (same service line): 0.7557
+[14:14:43] [INFO]   Inter-cluster similarity (different service lines): 0.6531
+[14:14:43] [INFO]   Separation ratio: 1.1571
+[14:14:43] [SUCCESS] ✓ Embeddings show good semantic clustering (intra > inter)
+[14:14:43] [INFO] 
+================================================================================
+[14:14:43] [INFO] TESTING CROSS-DOMAIN MATCHING
+[14:14:43] [INFO] ================================================================================
+[14:14:43] [INFO] Testing matching quality for 10 sample jobs...
+[14:14:43] [INFO]   Job JOB_0000 (Digital & Technology): 10/10 top matches same service line (avg score: 0.7371)
+[14:14:43] [INFO]   Job JOB_0001 (Digital & Technology): 8/10 top matches same service line (avg score: 0.7363)
+[14:14:43] [INFO]   Job JOB_0002 (Consulting): 8/10 top matches same service line (avg score: 0.7813)
+[14:14:43] [INFO]   Job JOB_0003 (Risk Management): 9/10 top matches same service line (avg score: 0.7647)
+[14:14:43] [INFO]   Job JOB_0004 (Digital & Technology): 6/10 top matches same service line (avg score: 0.7372)
+[14:14:43] [INFO]   Job JOB_0005 (Financial Advisory): 9/10 top matches same service line (avg score: 0.7476)
+[14:14:43] [INFO]   Job JOB_0006 (Audit & Assurance): 10/10 top matches same service line (avg score: 0.7758)
+[14:14:43] [INFO]   Job JOB_0007 (Tax & Legal): 9/10 top matches same service line (avg score: 0.7620)
+[14:14:43] [INFO]   Job JOB_0008 (Outsourcing): 8/10 top matches same service line (avg score: 0.7754)
+[14:14:43] [INFO]   Job JOB_0009 (Sustainability & ESG): 10/10 top matches same service line (avg score: 0.7946)
+[14:14:43] [INFO] 
+Average Match Quality: 87.00%
+[14:14:43] [SUCCESS] ✓ Excellent matching quality
+[14:14:43] [INFO] 
+================================================================================
+[14:14:43] [INFO] GENERATING EMBEDDING VISUALIZATIONS
+[14:14:43] [INFO] ================================================================================
+[14:14:43] [INFO] Computing PCA projection to 2D...
+[14:14:43] [SUCCESS] Saved PCA visualization to: logs\embedding_pca_visualization.png
+[14:14:43] [INFO] Explained variance: PC1=9.26%, PC2=7.64%, Total=16.90%
+[14:14:43] [INFO] 
+================================================================================
+[14:14:43] [INFO] EMBEDDING QUALITY SUMMARY
+[14:14:43] [INFO] ================================================================================
+[14:14:43] [INFO] Similarity Distribution Score: 100/100
+[14:14:43] [INFO] Semantic Clustering Score: 75/100
+[14:14:43] [INFO] Cross-Domain Matching Score: 86/100
+[14:14:43] [INFO] 
+========================================
+[14:14:43] [INFO] OVERALL EMBEDDING QUALITY SCORE: 87.0/100
+[14:14:43] [INFO] ========================================
+[14:14:43] [SUCCESS] Verdict: EXCELLENT
+[14:14:43] [INFO] 
+================================================================================
+[14:14:43] [INFO] Embedding assessment complete. Log saved to: logs\embedding_quality_test.txt
+[14:14:43] [INFO] ================================================================================
