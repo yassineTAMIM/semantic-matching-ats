@@ -1,5 +1,6 @@
 """
 Candidate Search Page - Enhanced matching with professional UI
+FIXED: Unique plotly chart keys, persistent dormant settings
 """
 
 import streamlit as st
@@ -26,6 +27,12 @@ def render_candidate_search():
     if 'matching_engine' not in st.session_state:
         with st.spinner("Initializing matching engine..."):
             st.session_state.matching_engine = MatchingEngine()
+    
+    # Initialize dormant settings in session state
+    if 'dormant_min_score' not in st.session_state:
+        st.session_state.dormant_min_score = 0.60  # Default to 60%
+    if 'dormant_top_k' not in st.session_state:
+        st.session_state.dormant_top_k = 10
     
     # Load jobs
     with open(JOB_DATA_FILE, 'r', encoding='utf-8') as f:
@@ -86,7 +93,7 @@ def render_candidate_search():
         filters['max_experience'] = filter_max_exp
     
     # Search button
-    if st.button("🔍 Find Matching Candidates", width="stretch", type="primary"):
+    if st.button("🔍 Find Matching Candidates", use_container_width=True, type="primary"):
         
         with st.spinner("Searching candidate pool..."):
             # Perform matching
@@ -125,13 +132,17 @@ def render_candidate_search():
             
             with tab2:
                 render_search_analytics(matches)
+            
+            # ⭐ Dormant Talent Section
+            st.markdown("---")
+            render_dormant_talent_section(selected_job)
         
         else:
             st.warning("No candidates found matching the criteria.")
             st.info("💡 Try relaxing filters or adjusting requirements")
 
 def render_search_results(matches, job):
-    """Render search results with professional cards"""
+    """Render search results with professional cards - FIXED: unique keys"""
     
     for i, match in enumerate(matches, 1):
         candidate = match['candidate']
@@ -149,7 +160,8 @@ def render_search_results(matches, job):
             
             with col1:
                 fig = render_score_breakdown(scores)
-                st.plotly_chart(fig, width="stretch")
+                # ⭐ FIX: Add unique key based on candidate ID and position
+                st.plotly_chart(fig, use_container_width=True, key=f"score_breakdown_{candidate['id']}_{i}")
             
             with col2:
                 st.markdown("#### Component Scores")
@@ -236,7 +248,7 @@ def render_search_analytics(matches):
             paper_bgcolor='rgba(0,0,0,0)'
         )
         
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True, key="analytics_score_dist")
     
     with col2:
         st.markdown("#### Quality Tiers")
@@ -259,7 +271,7 @@ def render_search_analytics(matches):
             margin=dict(l=0, r=0, t=0, b=0)
         )
         
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True, key="analytics_quality_pie")
     
     # Component analysis
     st.markdown("#### Component Score Analysis")
@@ -279,3 +291,194 @@ def render_search_analytics(matches):
         render_metric_card("Avg Experience", f"{avg_exp:.0%}")
     with col4:
         render_metric_card("Avg Location", f"{avg_loc:.0%}")
+
+
+def render_dormant_talent_section(job):
+    """Render dormant talent suggestions - ULTRA SIMPLE version with inline debug"""
+    
+    st.markdown("---")
+    st.markdown("## 💡 Dormant Talent Discovery")
+    
+    # Initialize dormant detector
+    if 'dormant_detector' not in st.session_state:
+        from src.search.dormant_detector import DormantTalentDetector
+        with st.spinner("Initializing dormant talent detector..."):
+            st.session_state.dormant_detector = DormantTalentDetector(
+                st.session_state.matching_engine
+            )
+    
+    # INLINE DEBUG - Always visible
+    detector = st.session_state.dormant_detector
+    total_dormant = len(detector.dormant_candidates)
+    
+    if total_dormant == 0:
+        st.error("❌ NO DORMANT CANDIDATES IN DATABASE!")
+        st.markdown("**Fix:** Regenerate data with dormant candidates:")
+        st.code("python scripts/synthetic_generator.py\npython pipeline.py", language="bash")
+        return
+    
+    # Show stats
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Total Dormant", total_dormant)
+    with col2:
+        st.metric("Current Job", job['title'][:20])
+    with col3:
+        # Check eligibility
+        from pathlib import Path
+        import json
+        app_path = Path("data/processed/applications.json")
+        try:
+            with open(app_path, 'r') as f:
+                apps = json.load(f)
+            applicants = {a['candidate_id'] for a in apps if a['job_id'] == job['id']}
+            eligible = sum(1 for c in detector.dormant_candidates if c['id'] not in applicants)
+            st.metric("Eligible for This Job", eligible)
+        except:
+            st.metric("Eligible", "Unknown")
+    
+    st.markdown("---")
+    
+    # Simple controls - NO FORM
+    col1, col2, col3 = st.columns([2, 2, 1])
+    
+    with col1:
+        min_score = st.slider(
+            "Min Score", 
+            0.5, 0.95, 0.60, 0.05,
+            key=f"dorm_score_{job['id']}"
+        )
+    
+    with col2:
+        max_results = st.number_input(
+            "Max Results", 
+            5, 30, 10,
+            key=f"dorm_max_{job['id']}"
+        )
+    
+    with col3:
+        st.markdown("<br>", unsafe_allow_html=True)
+        search_clicked = st.button(
+            "🔍 Search", 
+            type="primary",
+            key=f"dorm_btn_{job['id']}"
+        )
+    
+    # IMMEDIATE execution on click
+    if search_clicked:
+        st.markdown("---")
+        
+        # Progress tracking
+        progress = st.progress(0)
+        status = st.empty()
+        
+        try:
+            status.info("🔍 Step 1/3: Loading eligible candidates...")
+            progress.progress(33)
+            
+            # Get eligible dormant candidates
+            app_path = Path("data/processed/applications.json")
+            with open(app_path, 'r') as f:
+                apps = json.load(f)
+            
+            applied_to_this = {a['candidate_id'] for a in apps if a['job_id'] == job['id']}
+            eligible = [c for c in detector.dormant_candidates if c['id'] not in applied_to_this]
+            
+            st.write(f"Found {len(eligible)} eligible dormant candidates")
+            
+            if len(eligible) == 0:
+                status.warning("⚠️ All dormant candidates already applied to this job!")
+                st.info("Try selecting a different job position.")
+                progress.progress(100)
+                return
+            
+            status.info("🔍 Step 2/3: Computing match scores...")
+            progress.progress(66)
+            
+            # Direct search
+            matches = detector.detect_dormant_matches_direct(job, min_score=min_score)
+            matches = matches[:max_results]
+            
+            status.success(f"✅ Step 3/3: Found {len(matches)} matches!")
+            progress.progress(100)
+            
+            # Store results
+            result_key = f"dormant_res_{job['id']}"
+            st.session_state[result_key] = matches
+            
+        except Exception as e:
+            status.error(f"❌ Error: {str(e)}")
+            st.code(f"Details: {e}")
+            import traceback
+            with st.expander("Full Error"):
+                st.code(traceback.format_exc())
+            progress.progress(100)
+            return
+    
+    # Display stored results
+    result_key = f"dormant_res_{job['id']}"
+    if result_key in st.session_state:
+        matches = st.session_state[result_key]
+        
+        if not matches:
+            st.warning(f"No matches found above {min_score:.0%} threshold")
+            st.info("Try lowering the minimum score slider above.")
+            return
+        
+        st.markdown("---")
+        st.markdown(f"### 🎯 Top {len(matches)} Dormant Matches")
+        
+        # Metrics row
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            avg_months = sum(m['evolution']['months_dormant'] for m in matches) / len(matches)
+            render_metric_card("Avg Months Dormant", f"{avg_months:.0f}")
+        with col2:
+            avg_score = sum(m['scores']['total_with_evolution'] for m in matches) / len(matches)
+            render_metric_card("Avg Match Score", f"{avg_score:.0%}")
+        with col3:
+            render_metric_card("Dormant Matches", str(len(matches)))
+        
+        st.markdown("---")
+        
+        # Display each dormant candidate
+        for i, match in enumerate(matches, 1):
+            candidate = match['candidate']
+            scores = match['scores']
+            evolution = match['evolution']
+            
+            # Dormant alert badge
+            st.markdown(f"""
+                <div style="background: #FFF3CD; padding: 0.75rem; border-radius: 0.5rem; 
+                            border-left: 4px solid #FFC107; margin-bottom: 1rem;">
+                    <strong>⚡ DORMANT ALERT #{i}</strong> - Applied {evolution['months_dormant']} months ago
+                </div>
+            """, unsafe_allow_html=True)
+            
+            render_candidate_card(candidate, scores['total_with_evolution'], i)
+            
+            with st.expander("View Dormant Analysis"):
+                col1, col2 = st.columns([2, 1])
+                
+                with col1:
+                    st.markdown("**💡 Evolution Insight:**")
+                    st.info(evolution['narrative'])
+                    
+                    st.markdown("**Key Skills:**")
+                    st.markdown(", ".join(candidate['skills'][:10]))
+                
+                with col2:
+                    st.markdown("####Scores")
+                    st.metric("Base Match", f"{scores['total']:.0%}")
+                    st.metric("Evolution Bonus", f"+{scores['evolution']:.0%}")
+                    st.metric("Total Score", f"{scores['total_with_evolution']:.0%}")
+                    st.markdown(f"**Growth:** {evolution['growth_potential'].split(' - ')[0]}")
+                
+                st.markdown("---")
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown(f"**📧 Email:** {candidate['email']}")
+                with col2:
+                    st.markdown(f"**📱 Phone:** {candidate['phone']}")
+            
+            st.markdown("---")

@@ -17,7 +17,6 @@ from components.theme import apply_theme, BRAND_COLORS
 from pages.dashboard import render_dashboard
 from pages.candidate_search import render_candidate_search
 from pages.comparison import render_candidate_comparison
-from pages.dormant_talent import render_dormant_talent
 from pages.job_management import render_job_management
 
 # Page configuration
@@ -153,7 +152,6 @@ def render_sidebar():
         pages = [
             "Candidate Search",
             "Candidate Comparison", 
-            "Dormant Talent",
             "Job Management",
             "Dashboard",
             "About"
@@ -425,9 +423,6 @@ def main():
     
     elif current_page == "Candidate Comparison":
         render_candidate_comparison()
-    
-    elif current_page == "Dormant Talent":
-        render_dormant_talent()
     
     elif current_page == "Job Management":
         render_job_management()

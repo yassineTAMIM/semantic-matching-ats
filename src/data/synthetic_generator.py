@@ -1,6 +1,6 @@
 """
 Synthetic Data Generator for Forvis Mazars ATS
-Generates realistic candidate profiles and job postings
+Generates realistic candidate profiles and job postings with REALISTIC APPLICATION VOLUMES
 """
 
 import json
@@ -15,6 +15,33 @@ from config import *
 
 class SyntheticDataGenerator:
     """Generate realistic candidate and job data for Forvis Mazars"""
+    
+    # Job attractiveness levels (determines application volume)
+    JOB_ATTRACTIVENESS = {
+        # Entry-level positions (HIGH volume: 150-250 applications)
+        "high_volume": [
+            "Audit Intern", "Tax Intern", "Junior Auditor", "Junior Tax Consultant",
+            "Junior Data Analyst", "Business Analyst", "Financial Analyst",
+            "Tax Compliance Officer", "Risk Analyst", "ESG Analyst"
+        ],
+        
+        # Mid-level positions (MEDIUM volume: 30-60 applications)
+        "medium_volume": [
+            "Auditor", "Senior Auditor", "Tax Consultant", "Senior Tax Advisor",
+            "Data Analyst", "Senior Data Analyst", "M&A Advisor", "Strategy Consultant",
+            "Cybersecurity Analyst", "Compliance Manager", "ESG Consultant",
+            "IT Consultant", "Management Consultant", "Financial Due Diligence Manager"
+        ],
+        
+        # Senior/Specialized (LOW volume: 8-20 applications)
+        "low_volume": [
+            "Audit Manager", "Tax Manager", "Tax Director", "Senior Data Scientist",
+            "Cloud Solutions Architect", "Enterprise Risk Consultant", "Audit Partner",
+            "Transfer Pricing Specialist", "Valuation Specialist", "Healthcare Auditor",
+            "Banking Auditor", "Forensic Auditor", "Climate Risk Analyst",
+            "Digital Transformation Lead", "IT Auditor", "Solutions Architect"
+        ]
+    }
     
     # Expanded job titles by service line with seniority levels
     JOB_TITLES = {
@@ -162,513 +189,340 @@ class SyntheticDataGenerator:
         "Partner": (20, 30)
     }
     
-    # Projects/achievements templates
-    PROJECT_TEMPLATES = [
-        "Led audit of multinational {industry} company with revenues exceeding €{revenue}M",
-        "Managed tax compliance project for {client_count} international clients across {country_count} jurisdictions",
-        "Implemented {system} system resulting in {improvement}% efficiency improvement",
-        "Conducted due diligence for €{deal_size}M {deal_type} transaction",
-        "Developed predictive analytics model improving forecast accuracy by {improvement}%",
-        "Restructured operations for distressed {industry} client, achieving €{savings}M cost reduction",
-        "Delivered digital transformation roadmap for Fortune 500 {industry} company",
-        "Performed forensic investigation uncovering €{amount}M in financial irregularities",
-        "Designed ESG reporting framework adopted by {client_count} portfolio companies"
+    # First names (diverse, international)
+    FIRST_NAMES = [
+        # French
+        "Marie", "Jean", "Sophie", "Pierre", "Camille", "Thomas", "Julie", "Nicolas",
+        "Emma", "Alexandre", "Léa", "Antoine", "Chloé", "Maxime", "Sarah", "Lucas",
+        
+        # International
+        "Ahmed", "Fatima", "Mohammed", "Layla", "Hassan", "Amina",
+        "Li", "Wei", "Yan", "Chen", "Ming", "Ling",
+        "José", "María", "Carlos", "Ana", "Luis", "Carmen",
+        "John", "Emily", "Michael", "Jessica", "David", "Sarah",
+        "Hans", "Anna", "Klaus", "Petra", "Wolfgang", "Ingrid",
+        "Raj", "Priya", "Arjun", "Ananya", "Vikram", "Neha"
     ]
     
-    INDUSTRIES = [
-        "automotive", "banking", "insurance", "retail", "manufacturing", "technology",
-        "pharmaceuticals", "energy", "telecommunications", "hospitality", "real estate",
-        "healthcare", "aerospace", "logistics", "consumer goods", "media"
+    # Last names (diverse, international)
+    LAST_NAMES = [
+        # French
+        "Dupont", "Martin", "Bernard", "Dubois", "Thomas", "Robert", "Petit", "Richard",
+        "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel", "Garcia",
+        
+        # International
+        "Al-Farsi", "Ben Ahmed", "El-Sayed", "Khalil", "Nassar", "Rahman",
+        "Chen", "Wang", "Li", "Zhang", "Liu", "Yang",
+        "García", "Rodríguez", "Martínez", "López", "González", "Hernández",
+        "Smith", "Johnson", "Williams", "Brown", "Jones", "Miller",
+        "Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer",
+        "Sharma", "Patel", "Singh", "Kumar", "Gupta", "Reddy"
     ]
     
     def __init__(self):
-        # Expanded international names
-        self.first_names = [
-            # French
-            "Alexandre", "Antoine", "Baptiste", "Camille", "Charlotte", "Chloé", "Claire", "Élise",
-            "Emma", "François", "Gabrielle", "Guillaume", "Hugo", "Julie", "Laura", "Lucas",
-            "Léa", "Marie", "Mathilde", "Maxime", "Nicolas", "Paul", "Pierre", "Sophie", "Théo",
-            
-            # Arabic/Maghreb
-            "Amine", "Fatima", "Hassan", "Karim", "Leila", "Mehdi", "Mohamed", "Nadia",
-            "Omar", "Rachid", "Samir", "Sara", "Yasmine", "Youssef", "Zineb",
-            
-            # Anglo-Saxon
-            "Alexander", "Alice", "Benjamin", "Catherine", "Daniel", "David", "Emily",
-            "James", "John", "Laura", "Michael", "Olivia", "Rachel", "Robert", "Sarah",
-            "Thomas", "William",
-            
-            # Spanish
-            "Carlos", "Carmen", "Diego", "Elena", "Isabel", "Javier", "José", "Luis", "María",
-            
-            # German
-            "Anna", "Felix", "Hannah", "Jonas", "Julia", "Lukas", "Maximilian", "Sophie",
-            
-            # International
-            "Aisha", "Ali", "Chen", "Dmitri", "Ivan", "Kenji", "Mei", "Ravi", "Yuki"
-        ]
-        
-        self.last_names = [
-            # French
-            "Bernard", "Dubois", "Dupont", "Durand", "Fontaine", "Fournier", "Garcia",
-            "Lambert", "Lefebvre", "Leroy", "Martin", "Moreau", "Petit", "Richard",
-            "Robert", "Roux", "Simon", "Thomas",
-            
-            # Maghreb
-            "Alami", "Amrani", "Benali", "Bouazza", "El Amrani", "El Fassi", "Hassani",
-            "Idrissi", "Khalil", "Mansouri", "Oulahcen", "Tazi", "Zerouali",
-            
-            # Anglo-Saxon
-            "Anderson", "Brown", "Davis", "Johnson", "Jones", "Miller", "Moore",
-            "Smith", "Taylor", "Thomas", "White", "Williams", "Wilson",
-            
-            # Spanish
-            "Díaz", "Fernández", "García", "González", "Hernández", "López",
-            "Martínez", "Pérez", "Rodríguez", "Sánchez",
-            
-            # German
-            "Fischer", "Hoffman", "Klein", "Müller", "Schmidt", "Schneider", "Wagner", "Weber",
-            
-            # Other European
-            "Ivanov", "Kowalski", "Nielsen", "Petrov", "Rossi", "Van den Berg",
-            
-            # Asian
-            "Chen", "Khan", "Kim", "Lee", "Nguyen", "Patel", "Wang", "Xu", "Zhang"
-        ]
+        """Initialize generator"""
+        self.used_names = set()
+        random.seed(42)  # For reproducibility
     
-    def generate_candidates(self, num_candidates: int = 1000) -> List[Dict]:
-        """Generate realistic candidate profiles with rich details"""
+    def _generate_unique_name(self) -> str:
+        """Generate unique candidate name"""
+        max_attempts = 100
+        for _ in range(max_attempts):
+            first = random.choice(self.FIRST_NAMES)
+            last = random.choice(self.LAST_NAMES)
+            name = f"{first} {last}"
+            
+            if name not in self.used_names:
+                self.used_names.add(name)
+                return name
+        
+        # Fallback: add number
+        base_name = f"{random.choice(self.FIRST_NAMES)} {random.choice(self.LAST_NAMES)}"
+        counter = 1
+        while f"{base_name} {counter}" in self.used_names:
+            counter += 1
+        
+        name = f"{base_name} {counter}"
+        self.used_names.add(name)
+        return name
+    
+    def _get_job_volume_category(self, job_title: str) -> str:
+        """Determine application volume category for a job"""
+        for category, titles in self.JOB_ATTRACTIVENESS.items():
+            if any(title.lower() in job_title.lower() for title in titles):
+                return category
+        
+        # Default to medium volume
+        return "medium_volume"
+    
+    def _get_expected_applications(self, job_title: str, service_line: str) -> int:
+        """Get realistic number of applications for a job"""
+        category = self._get_job_volume_category(job_title)
+        
+        if category == "high_volume":
+            base_range = (150, 250)
+        elif category == "low_volume":
+            base_range = (8, 20)
+        else:  # medium_volume
+            base_range = (30, 60)
+        
+        # Adjust for service line popularity
+        popular_lines = ["Consulting", "Digital & Technology", "Financial Advisory"]
+        if service_line in popular_lines:
+            multiplier = 1.2
+        else:
+            multiplier = 1.0
+        
+        min_apps = int(base_range[0] * multiplier)
+        max_apps = int(base_range[1] * multiplier)
+        
+        return random.randint(min_apps, max_apps)
+    
+    def generate_candidates(self, num_candidates: int) -> List[Dict]:
+        """Generate candidate profiles - LARGE POOL for realistic matching"""
+        print(f"\n[1/3] Generating {num_candidates} candidate profiles...")
+        
         candidates = []
+        service_lines = list(self.JOB_TITLES.keys())
         
         for i in range(num_candidates):
-            service_line = random.choice(FORVIS_SERVICE_LINES)
-            job_titles_pool = self.JOB_TITLES.get(service_line, ["Consultant"])
-            job_title = random.choice(job_titles_pool)
+            # Select service line and title
+            service_line = random.choice(service_lines)
+            current_title = random.choice(self.JOB_TITLES[service_line])
             
-            # Determine experience level from title
-            if any(x in job_title.lower() for x in ["intern", "junior", "analyst"]):
-                experience_level = random.choice(["Intern", "Junior"])
-            elif any(x in job_title.lower() for x in ["senior", "lead"]):
-                experience_level = random.choice(["Senior", "Lead"])
-            elif any(x in job_title.lower() for x in ["partner", "director"]):
-                experience_level = random.choice(["Principal", "Partner"])
-            else:
-                experience_level = random.choice(["Mid-Level", "Senior"])
+            # Determine experience level
+            exp_level = random.choice(list(self.EXPERIENCE_LEVELS.keys()))
+            years_exp_min, years_exp_max = self.EXPERIENCE_LEVELS[exp_level]
+            years_experience = random.randint(years_exp_min, years_exp_max)
             
-            exp_min, exp_max = self.EXPERIENCE_LEVELS[experience_level]
-            years_experience = random.randint(exp_min, exp_max)
-            
-            # Generate application date (random within last 3 years)
-            days_ago = random.randint(30, 1095)
-            last_application = datetime.now() - timedelta(days=days_ago)
-            is_dormant = days_ago > (DORMANT_THRESHOLD_MONTHS * 30)
-            
-            # Select skills with proficiency
-            skills = self._get_skills_for_service_line(service_line, years_experience)
-            
-            # Generate 2-4 certifications for experienced professionals
-            num_certs = 0 if years_experience < 2 else random.randint(1, min(4, 1 + years_experience // 3))
-            certifications = random.sample(self.CERTIFICATIONS, num_certs) if num_certs > 0 else []
-            
-            # Languages with proficiency
-            num_languages = random.randint(2, 4)
-            languages = random.sample(FORVIS_SKILL_TAXONOMY["Languages"], num_languages)
-            language_prof = [f"{lang} ({random.choice(['Native', 'Fluent', 'Professional', 'Intermediate'])})" 
-                           for lang in languages]
-            
-            # Generate education (1-2 degrees)
-            num_degrees = 1 if years_experience < 5 else random.randint(1, 2)
-            education_list = random.sample(self.EDUCATION, num_degrees)
-            
-            # Generate detailed work history
-            work_history = self._generate_detailed_work_history(years_experience, service_line, job_titles_pool)
-            
-            # Generate key achievements/projects
-            projects = self._generate_projects(service_line, years_experience)
-            
+            # Generate profile
             candidate = {
-                "id": f"CV_{i:04d}",
-                "name": f"{random.choice(self.first_names)} {random.choice(self.last_names)}",
-                "email": f"{random.choice(self.first_names).lower()}.{random.choice(self.last_names).lower()}{random.randint(1,99)}@email.com",
-                "phone": f"+{random.choice(['33', '44', '49', '34', '212'])} {random.randint(600000000, 799999999)}",
-                "current_title": job_title,
+                "id": f"CV_{i+1:04d}",
+                "name": self._generate_unique_name(),
+                "email": f"candidate{i+1}@example.com",
+                "phone": f"+33 6 {random.randint(10,99)} {random.randint(10,99)} {random.randint(10,99)} {random.randint(10,99)}",
+                "location": random.choice(FORVIS_LOCATIONS),
+                "current_title": current_title,
                 "service_line": service_line,
                 "years_experience": years_experience,
-                "experience_level": experience_level,
-                "location": random.choice(FORVIS_LOCATIONS),
-                "education": education_list,
-                "certifications": certifications,
-                "skills": skills,
-                "languages": language_prof,
-                "summary": self._generate_detailed_summary(job_title, years_experience, service_line, certifications),
-                "work_history": work_history,
-                "projects": projects,
-                "last_application_date": last_application.strftime("%Y-%m-%d"),
-                "is_dormant": is_dormant,
-                "availability": random.choice(["Immediate", "2 weeks", "1 month", "2 months", "3 months"]),
-                "expected_salary": self._calculate_salary(years_experience, experience_level, service_line),
+                "experience_level": exp_level,
+                "education": random.sample(self.EDUCATION, random.randint(1, 2)),
+                "certifications": random.sample(self.CERTIFICATIONS, random.randint(0, 3)),
+                "skills": self._get_skills_for_service_line(service_line, years_experience),
+                "languages": random.sample(["English", "French", "German", "Spanish", "Arabic"], random.randint(2, 4)),
+                "summary": self._generate_summary(current_title, years_experience, service_line),
+                "company_history": self._generate_company_history(years_experience),
+                "availability": random.choice(["Immediate", "2 weeks notice", "1 month notice", "3 months notice"]),
+                "salary_expectation": self._generate_salary(years_experience, service_line),
                 "remote_preference": random.choice([True, False, "Hybrid"]),
-                "willing_to_relocate": random.choice([True, False]),
-                "notice_period": random.choice(["None", "1 month", "2 months", "3 months"]),
-                "created_at": last_application.strftime("%Y-%m-%d")
+                
+                # WILL BE SET BY APPLICATION GENERATOR
+                "last_application_date": None,  # Placeholder
+                "is_dormant": False  # Placeholder
             }
             
             candidates.append(candidate)
+            
+            if (i + 1) % 500 == 0:
+                print(f"   Generated {i+1}/{num_candidates} candidates...")
         
+        print(f"✅ Generated {len(candidates)} candidates")
         return candidates
     
-    def _calculate_salary(self, years_exp: int, level: str, service_line: str) -> int:
-        """Calculate realistic salary based on experience and role"""
-        base_salaries = {
-            "Intern": 25000,
-            "Junior": 35000,
-            "Mid-Level": 50000,
-            "Senior": 70000,
-            "Lead": 95000,
-            "Principal": 120000,
-            "Partner": 180000
-        }
+    def generate_jobs(self, num_jobs: int) -> List[Dict]:
+        """Generate job postings"""
+        print(f"\n[2/3] Generating {num_jobs} job postings...")
         
-        # Premium for certain service lines
-        premium_lines = ["Financial Advisory", "Consulting", "Digital & Technology"]
-        multiplier = 1.15 if service_line in premium_lines else 1.0
-        
-        base = base_salaries.get(level, 50000)
-        # Add variation
-        salary = int(base * multiplier * random.uniform(0.9, 1.2))
-        
-        return salary
-    
-    def _generate_detailed_summary(self, title: str, years: int, service_line: str, certs: List[str]) -> str:
-        """Generate a compelling professional summary"""
-        templates = [
-            f"Results-driven {title} with {years} years of expertise in {service_line.lower()}. "
-            f"Proven track record of delivering high-impact solutions to Fortune 500 clients across EMEA region. "
-            f"Strong background in financial analysis, regulatory compliance, and stakeholder management. "
-            f"{self._get_cert_summary(certs)}",
-            
-            f"Accomplished {title} bringing {years} years of progressive experience in {service_line.lower()}. "
-            f"Specialized in complex cross-border transactions, risk assessment, and strategic advisory. "
-            f"Track record of managing multimillion-euro engagements and leading teams of up to {random.randint(5,15)} professionals. "
-            f"{self._get_cert_summary(certs)}",
-            
-            f"Strategic {title} with {years} years navigating the evolving landscape of {service_line.lower()}. "
-            f"Deep expertise in regulatory frameworks (IFRS, GDPR, SOX), digital transformation, and process optimization. "
-            f"Known for building trusted client relationships and delivering measurable business value. "
-            f"{self._get_cert_summary(certs)}",
-            
-            f"Experienced {title} professional with {years} years of hands-on experience in {service_line.lower()}. "
-            f"Demonstrated ability to lead complex projects from inception to completion while maintaining highest quality standards. "
-            f"Expertise spans financial modeling, due diligence, technology implementation, and change management. "
-            f"{self._get_cert_summary(certs)}"
-        ]
-        
-        return random.choice(templates)
-    
-    def _get_cert_summary(self, certs: List[str]) -> str:
-        """Generate certification summary"""
-        if not certs:
-            return "Committed to continuous professional development."
-        elif len(certs) == 1:
-            return f"Holds {certs[0]} certification."
-        else:
-            return f"Holds multiple professional certifications including {certs[0]} and {certs[1]}."
-    
-    def _generate_detailed_work_history(self, years: int, service_line: str, titles_pool: List[str]) -> List[Dict]:
-        """Generate realistic work history with career progression"""
-        history = []
-        current_year = datetime.now().year
-        current_month = datetime.now().month
-        
-        # Determine number of positions based on experience
-        if years <= 2:
-            num_positions = 1
-        elif years <= 5:
-            num_positions = 2
-        elif years <= 10:
-            num_positions = random.randint(2, 3)
-        else:
-            num_positions = random.randint(3, 5)
-        
-        years_remaining = years
-        
-        for i in range(num_positions):
-            # Duration of this position (shorter for recent roles, longer for earlier)
-            if i == 0:  # Current position
-                duration = min(random.randint(2, 5), years_remaining)
-            else:
-                duration = min(random.randint(2, 4), years_remaining)
-            
-            years_remaining = max(0, years_remaining - duration)
-            
-            # Calculate dates
-            end_year = current_year - sum(h.get('duration_years', 0) for h in history)
-            end_month = current_month if i == 0 else random.randint(1, 12)
-            start_year = end_year - duration
-            start_month = random.randint(1, 12)
-            
-            # Select title (more senior for earlier positions if experienced)
-            if i == 0:  # Current role
-                title_idx = -1  # Most senior available
-            else:
-                # Progressive titles
-                title_idx = max(0, len(titles_pool) - 1 - i * 2)
-            
-            title = titles_pool[min(title_idx, len(titles_pool) - 1)]
-            
-            # Select company (mix of Forvis Mazars and others)
-            if i == 0 and random.random() < 0.3:
-                company = "Forvis Mazars"
-            else:
-                company = random.choice(self.COMPANIES)
-            
-            # Generate achievements (2-4 per role)
-            achievements = self._generate_achievements(title, service_line, duration)
-            
-            position = {
-                "company": company,
-                "title": title,
-                "start_date": f"{start_year}-{start_month:02d}",
-                "end_date": f"{end_year}-{end_month:02d}" if i > 0 else "Present",
-                "duration_years": duration,
-                "location": random.choice(FORVIS_LOCATIONS),
-                "description": f"{'Led' if 'Senior' in title or 'Manager' in title else 'Supported'} {service_line.lower()} initiatives including client engagement, technical delivery, and team collaboration.",
-                "achievements": achievements,
-                "team_size": random.randint(1, 20) if any(x in title.lower() for x in ['manager', 'lead', 'director']) else None
-            }
-            
-            history.append(position)
-            
-            if years_remaining <= 0:
-                break
-        
-        return history
-    
-    def _generate_achievements(self, title: str, service_line: str, duration: int) -> List[str]:
-        """Generate specific achievements for a role"""
-        num_achievements = min(2 + duration, 5)
-        
-        achievement_pool = [
-            f"Delivered {random.randint(5,30)} client engagements with average satisfaction score of {random.randint(85,98)}%",
-            f"Reduced audit completion time by {random.randint(15,35)}% through process optimization",
-            f"Identified cost savings opportunities totaling €{random.randint(1,10)}M for key clients",
-            f"Led cross-functional team of {random.randint(4,12)} professionals across {random.randint(2,5)} countries",
-            f"Developed automated reporting solution reducing manual effort by {random.randint(30,60)} hours/month",
-            f"Achieved {random.randint(95,100)}% on-time delivery rate across all assigned projects",
-            f"Mentored {random.randint(3,10)} junior staff members, {random.randint(2,5)} promoted within 18 months",
-            f"Contributed to winning {random.randint(2,8)} new client proposals valued at €{random.randint(5,50)}M+",
-            f"Implemented risk assessment framework adopted across {random.randint(15,40)} client engagements",
-            f"Received '{random.choice(['Excellence Award', 'Top Performer Award', 'Client Impact Award'])}' for outstanding contributions"
-        ]
-        
-        return random.sample(achievement_pool, num_achievements)
-    
-    def _generate_projects(self, service_line: str, years_exp: int) -> List[Dict]:
-        """Generate notable projects/case studies"""
-        if years_exp < 2:
-            num_projects = random.randint(1, 2)
-        elif years_exp < 5:
-            num_projects = random.randint(2, 3)
-        else:
-            num_projects = random.randint(3, 5)
-        
-        projects = []
-        
-        for _ in range(num_projects):
-            template = random.choice(self.PROJECT_TEMPLATES)
-            
-            # Fill template with realistic values
-            project_desc = template.format(
-                industry=random.choice(self.INDUSTRIES),
-                revenue=random.randint(50, 5000),
-                client_count=random.randint(5, 100),
-                country_count=random.randint(3, 25),
-                system=random.choice(["ERP", "CRM", "BI", "Data Analytics", "Cloud Migration", "Automation"]),
-                improvement=random.randint(15, 50),
-                deal_size=random.randint(10, 500),
-                deal_type=random.choice(["M&A", "acquisition", "divestiture", "IPO", "restructuring"]),
-                savings=random.randint(1, 50),
-                amount=random.randint(1, 20)
-            )
-            
-            projects.append({
-                "description": project_desc,
-                "year": datetime.now().year - random.randint(0, min(years_exp, 5)),
-                "role": random.choice(["Project Lead", "Senior Consultant", "Technical Lead", "Team Member"])
-            })
-        
-        return projects
-    
-    def generate_jobs(self, num_jobs: int = 50) -> List[Dict]:
-        """Generate realistic job postings with detailed requirements"""
         jobs = []
+        service_lines = list(self.JOB_TITLES.keys())
         
         for i in range(num_jobs):
-            service_line = random.choice(FORVIS_SERVICE_LINES)
-            job_titles_pool = self.JOB_TITLES.get(service_line, ["Consultant"])
-            job_title = random.choice(job_titles_pool)
+            service_line = random.choice(service_lines)
+            title = random.choice(self.JOB_TITLES[service_line])
             
-            # Determine experience level from title
-            if any(x in job_title.lower() for x in ["intern", "junior", "analyst"]):
-                experience_level = random.choice(["Intern", "Junior"])
-            elif any(x in job_title.lower() for x in ["senior", "lead"]):
-                experience_level = random.choice(["Senior", "Lead"])
-            elif any(x in job_title.lower() for x in ["partner", "director"]):
-                experience_level = random.choice(["Principal", "Partner"])
-            else:
-                experience_level = random.choice(["Mid-Level", "Senior"])
-            
-            exp_min, exp_max = self.EXPERIENCE_LEVELS[experience_level]
-            
-            # Required skills (5-10 skills)
-            required_skills = self._get_skills_for_service_line(service_line, exp_min + 2)
-            required_languages = random.sample(FORVIS_SKILL_TAXONOMY["Languages"], random.randint(2, 3))
-            
-            # Preferred certifications
-            preferred_certs = random.sample(self.CERTIFICATIONS, random.randint(1, 3))
-            
-            # Responsibilities (6-10 items)
-            responsibilities = self._generate_detailed_responsibilities(job_title, service_line, experience_level)
-            
-            # Requirements
-            requirements = self._generate_requirements(experience_level, service_line)
-            
-            # Benefits
-            benefits = self._generate_benefits()
+            # Determine experience level
+            exp_level = random.choice(list(self.EXPERIENCE_LEVELS.keys()))
+            years_min, years_max = self.EXPERIENCE_LEVELS[exp_level]
             
             job = {
-                "id": f"JOB_{i:04d}",
-                "title": job_title,
+                "id": f"JOB_{i+1:03d}",
+                "title": title,
                 "service_line": service_line,
                 "location": random.choice(FORVIS_LOCATIONS),
-                "experience_level": experience_level,
-                "years_experience_min": exp_min,
-                "years_experience_max": exp_max,
-                "description": self._generate_detailed_job_description(job_title, service_line, experience_level),
-                "responsibilities": responsibilities,
-                "requirements": requirements,
-                "required_skills": required_skills,
-                "required_languages": required_languages,
-                "preferred_certifications": preferred_certs,
-                "preferred_education": random.choice(self.EDUCATION),
-                "salary_range": self._get_salary_range(exp_min, exp_max, service_line),
-                "benefits": benefits,
-                "contract_type": random.choice(["Full-time", "Full-time", "Full-time", "Contract"]),  # 75% full-time
-                "remote": random.choice([True, False, "Hybrid", "Hybrid"]),  # 50% hybrid
-                "travel_required": random.choice(["None", "Occasional (10-25%)", "Frequent (25-50%)", "Extensive (50%+)"]),
-                "team_size": random.randint(5, 50),
-                "reports_to": random.choice(["Partner", "Director", "Senior Manager", "Manager"]),
-                "posted_date": datetime.now().strftime("%Y-%m-%d"),
-                "application_deadline": (datetime.now() + timedelta(days=random.randint(30, 90))).strftime("%Y-%m-%d"),
-                "positions_available": random.randint(1, 5),
-                "created_at": datetime.now().strftime("%Y-%m-%d")
+                "years_experience_min": years_min,
+                "years_experience_max": years_max,
+                "experience_level": exp_level,
+                "contract_type": random.choice(["Full-time", "Full-time", "Full-time", "Contract"]),
+                "remote": random.choice([True, False, "Hybrid"]),
+                "travel_required": random.choice(["None", "Occasional (10%)", "Frequent (25%)", "Extensive (50%)"]),
+                "description": self._generate_job_description(title, service_line),
+                "required_skills": self._get_skills_for_service_line(service_line, years_min + 2),
+                "nice_to_have_skills": random.sample(FORVIS_SKILL_TAXONOMY.get("Technical", [])[:15], random.randint(3, 5)),
+                "responsibilities": self._generate_responsibilities(title, service_line),
+                "qualifications": self._generate_qualifications(exp_level, service_line),
+                "salary_range": self._get_salary_range(years_min, years_max, service_line),
+                "posted_date": (datetime.now() - timedelta(days=random.randint(1, 60))).strftime("%Y-%m-%d"),
+                "deadline": (datetime.now() + timedelta(days=random.randint(10, 45))).strftime("%Y-%m-%d"),
+                
+                # Application volume metadata
+                "expected_applications": self._get_expected_applications(title, service_line),
+                "volume_category": self._get_job_volume_category(title)
             }
             
             jobs.append(job)
         
+        print(f"✅ Generated {len(jobs)} jobs")
+        
+        # Print volume distribution
+        high_vol = sum(1 for j in jobs if j['volume_category'] == 'high_volume')
+        med_vol = sum(1 for j in jobs if j['volume_category'] == 'medium_volume')
+        low_vol = sum(1 for j in jobs if j['volume_category'] == 'low_volume')
+        
+        print(f"\n   Volume Distribution:")
+        print(f"   📈 High volume jobs (150-250 apps): {high_vol}")
+        print(f"   📊 Medium volume jobs (30-60 apps): {med_vol}")
+        print(f"   📉 Low volume jobs (8-20 apps): {low_vol}")
+        
         return jobs
     
-    def _generate_detailed_job_description(self, title: str, service_line: str, level: str) -> str:
-        """Generate compelling job description"""
-        return f"""About Forvis Mazars
-Forvis Mazars is a leading international audit, tax, and advisory firm operating in over 100 countries. We are committed to building a sustainable and prosperous future for our clients, people, and communities.
-
-The Opportunity
-We are seeking a talented {level} {title} to join our {service_line} team. In this role, you will work with a diverse portfolio of clients ranging from multinational corporations to high-growth startups, providing high-quality professional services and strategic advisory that makes a real impact.
-
-What Makes This Role Unique
-You will be part of a collaborative, innovation-driven environment that values diversity, integrity, and professional excellence. This position offers exposure to complex, cross-border engagements, cutting-edge methodologies, and opportunities for accelerated career development.
-
-Our Culture
-We foster a culture of continuous learning, work-life balance, and inclusion. With flexible working arrangements, comprehensive learning programs, and clear career progression paths, you'll have the support and resources to reach your full potential.
-
-Impact
-The work you do will directly contribute to our clients' success and societal progress. Join us in shaping the future of professional services."""
+    def generate_application_history(self, candidates: List[Dict], jobs: List[Dict]) -> List[Dict]:
+        """
+        Generate REALISTIC application history based on job attractiveness
+        Each job gets realistic number of applicants based on seniority/type
+        """
+        print(f"\n[3/3] Generating realistic application history...")
+        
+        applications = []
+        application_id = 1
+        candidate_application_count = {c['id']: 0 for c in candidates}
+        
+        # For each job, generate appropriate number of applications
+        for job in jobs:
+            expected_apps = job['expected_applications']
+            job_id = job['id']
+            
+            print(f"   {job['title']}: Generating {expected_apps} applications...")
+            
+            # Filter candidates that could reasonably apply for this job
+            eligible_candidates = [
+                c for c in candidates
+                if (
+                    # Service line match or adjacent
+                    c['service_line'] == job['service_line'] or 
+                    random.random() < 0.15  # 15% cross-service applications
+                ) and (
+                    # Experience level appropriate
+                    abs(c['years_experience'] - job['years_experience_min']) <= 5 or
+                    random.random() < 0.2  # 20% stretch applications
+                )
+            ]
+            
+            if len(eligible_candidates) < expected_apps:
+                # Not enough eligible candidates, relax constraints
+                eligible_candidates = candidates.copy()
+            
+            # Randomly select applicants (without replacement for this job)
+            num_to_select = min(expected_apps, len(eligible_candidates))
+            selected_candidates = random.sample(eligible_candidates, num_to_select)
+            
+            for candidate in selected_candidates:
+                # Generate application date (spread over past 18 months)
+                days_ago = random.randint(1, 540)  # 1 day to 18 months
+                application_date = datetime.now() - timedelta(days=days_ago)
+                
+                applications.append({
+                    "id": application_id,
+                    "candidate_id": candidate['id'],
+                    "job_id": job_id,
+                    "application_date": application_date.strftime("%Y-%m-%d"),
+                    "days_since_application": days_ago,
+                    "created_at": application_date.strftime("%Y-%m-%d")
+                })
+                
+                application_id += 1
+                candidate_application_count[candidate['id']] += 1
+        
+        print(f"✅ Generated {len(applications)} total applications")
+        
+        # Calculate and set dormant status for each candidate
+        for candidate in candidates:
+            # Get all applications for this candidate
+            candidate_apps = [a for a in applications if a['candidate_id'] == candidate['id']]
+            
+            if candidate_apps:
+                # Find most recent application
+                most_recent = min(candidate_apps, key=lambda x: x['days_since_application'])
+                
+                candidate['last_application_date'] = most_recent['application_date']
+                candidate['is_dormant'] = most_recent['days_since_application'] > (DORMANT_THRESHOLD_MONTHS * 30)
+            else:
+                # Candidate never applied (shouldn't happen with realistic volumes)
+                candidate['last_application_date'] = None
+                candidate['is_dormant'] = False
+        
+        # Statistics
+        total_dormant = sum(1 for c in candidates if c['is_dormant'])
+        total_active = len(candidates) - total_dormant
+        avg_apps_per_candidate = len(applications) / len(candidates)
+        candidates_with_apps = sum(1 for count in candidate_application_count.values() if count > 0)
+        
+        print(f"\n   📊 Application Statistics:")
+        print(f"   Total applications: {len(applications)}")
+        print(f"   Avg per job: {len(applications)/len(jobs):.1f}")
+        print(f"   Avg per candidate: {avg_apps_per_candidate:.1f}")
+        print(f"   Candidates who applied: {candidates_with_apps}/{len(candidates)}")
+        print(f"   Active candidates: {total_active}")
+        print(f"   Dormant candidates: {total_dormant} ({total_dormant/len(candidates)*100:.1f}%)")
+        
+        return applications
     
-    def _generate_detailed_responsibilities(self, title: str, service_line: str, level: str) -> List[str]:
-        """Generate detailed key responsibilities"""
-        base_resp = [
-            f"Lead and execute {service_line.lower()} engagements for multinational clients across diverse industries",
-            "Develop and maintain strong, trusted relationships with C-level executives and key stakeholders",
-            "Prepare high-quality deliverables including reports, presentations, and technical documentation",
-            "Identify business development opportunities and contribute to proposal development",
-            "Stay current with industry trends, regulatory changes, and emerging technologies",
-            "Collaborate with cross-functional teams across multiple geographies and service lines"
+    def _generate_summary(self, title: str, years_exp: int, service_line: str) -> str:
+        """Generate professional summary"""
+        templates = [
+            f"Experienced {title} with {years_exp} years in {service_line}. Proven track record in delivering high-quality results and driving business value.",
+            f"{title} professional with {years_exp}+ years of expertise in {service_line}. Strong analytical skills and client relationship management.",
+            f"Results-driven {title} specializing in {service_line}. {years_exp} years of experience in complex projects and strategic initiatives.",
         ]
-        
-        if any(x in level for x in ["Senior", "Lead", "Principal", "Partner"]):
-            base_resp.extend([
-                f"Mentor and coach teams of {random.randint(3,10)} junior professionals, fostering their professional growth",
-                "Drive innovation and thought leadership through whitepapers, webinars, and conference presentations",
-                "Participate in strategic planning and service line development initiatives",
-                "Manage complex stakeholder relationships and navigate challenging client situations"
-            ])
-        else:
-            base_resp.extend([
-                "Support senior team members in executing complex projects and client deliverables",
-                "Conduct research and analysis to support advisory recommendations",
-                "Participate in team meetings, knowledge sharing sessions, and learning programs"
-            ])
-        
-        return base_resp
+        return random.choice(templates)
     
-    def _generate_requirements(self, level: str, service_line: str) -> List[str]:
-        """Generate job requirements"""
-        reqs = []
-        
-        if "Digital" in service_line or "Technology" in service_line:
-            reqs.append(f"Bachelor's or Master's degree in Computer Science, Data Science, Engineering, or related field")
-        else:
-            reqs.append(f"Bachelor's or Master's degree in Business, Finance, Accounting, Economics, or related field")
-        
-        if "Junior" in level or "Intern" in level:
-            reqs.extend([
-                "Strong academic record (GPA 3.0+)",
-                "Excellent analytical and problem-solving abilities",
-                "Outstanding communication skills in English (written and verbal)",
-                "Proficiency in Microsoft Office Suite (Excel, PowerPoint, Word)",
-                "Demonstrated interest in professional services and client advisory"
-            ])
-        else:
-            reqs.extend([
-                "Proven track record of delivering high-quality work in fast-paced environments",
-                "Exceptional analytical, critical thinking, and problem-solving skills",
-                "Outstanding written and verbal communication abilities",
-                "Advanced proficiency in relevant technical tools and software",
-                "Strong project management and organizational capabilities",
-                "Ability to work independently and as part of multicultural teams",
-                "Client-focused mindset with ability to build lasting relationships"
-            ])
-        
-        if any(x in level for x in ["Senior", "Lead", "Principal"]):
-            reqs.append("Demonstrated leadership experience managing teams and complex projects")
-        
-        return reqs
+    def _generate_company_history(self, years_exp: int) -> List[str]:
+        """Generate work history"""
+        num_companies = min(years_exp // 3 + 1, 4)
+        return random.sample(self.COMPANIES, min(num_companies, len(self.COMPANIES)))
     
-    def _generate_benefits(self) -> List[str]:
-        """Generate comprehensive benefits package"""
-        all_benefits = [
-            "Competitive salary and performance-based bonuses",
-            "Comprehensive health insurance (medical, dental, vision)",
-            "Retirement savings plan with employer matching",
-            "25+ days annual leave plus public holidays",
-            "Flexible/hybrid working arrangements",
-            "Professional development budget (€2,000-5,000/year)",
-            "Reimbursement for professional certifications (CPA, CFA, etc.)",
-            "Sabbatical leave options after 5 years",
-            "Employee assistance program and wellness initiatives",
-            "Parental leave (maternity and paternity)",
-            "Commuter benefits and bike-to-work schemes",
-            "Technology allowance for home office setup",
-            "Annual team offsites and social events",
-            "Mentorship and coaching programs",
-            "Internal mobility opportunities across global offices",
-            "Discounted gym memberships",
-            "Learning platform access (Coursera, LinkedIn Learning, etc.)",
-            "Diversity and inclusion initiatives"
+    def _generate_salary(self, years_exp: int, service_line: str) -> str:
+        """Generate salary expectation"""
+        base = 35000 + (years_exp * 7000)
+        
+        if service_line in ["Financial Advisory", "Consulting", "Digital & Technology"]:
+            base = int(base * 1.2)
+        
+        return f"€{base//1000}K - €{(base+15000)//1000}K"
+    
+    def _generate_job_description(self, title: str, service_line: str) -> str:
+        """Generate job description"""
+        return f"We are seeking a talented {title} to join our {service_line} team. The ideal candidate will contribute to high-impact projects and work with leading global clients."
+    
+    def _generate_responsibilities(self, title: str, service_line: str) -> List[str]:
+        """Generate job responsibilities"""
+        return [
+            f"Lead {service_line.lower()} engagements for key clients",
+            "Develop and implement strategic solutions",
+            "Collaborate with cross-functional teams",
+            "Mentor junior team members",
+            "Drive continuous improvement initiatives"
         ]
-        
-        return random.sample(all_benefits, random.randint(10, 15))
+    
+    def _generate_qualifications(self, exp_level: str, service_line: str) -> List[str]:
+        """Generate job qualifications"""
+        years_min = self.EXPERIENCE_LEVELS[exp_level][0]
+        return [
+            f"Minimum {years_min} years of experience in {service_line.lower()}",
+            "Strong analytical and problem-solving skills",
+            "Excellent communication and presentation abilities",
+            "Proven track record of delivering results",
+            "Bachelor's degree required; Master's preferred"
+        ]
     
     def _get_salary_range(self, exp_min: int, exp_max: int, service_line: str) -> str:
         """Generate realistic salary range"""
@@ -726,11 +580,14 @@ The work you do will directly contribute to our clients' success and societal pr
     
     def save_data(self, candidates: List[Dict], jobs: List[Dict]):
         """Save generated data to JSON files"""
+        # Generate application history FIRST
+        applications = self.generate_application_history(candidates, jobs)
+        
         # Save candidates
         cv_path = CV_DATA_FILE
         with open(cv_path, 'w', encoding='utf-8') as f:
             json.dump(candidates, f, indent=2, ensure_ascii=False)
-        print(f"✅ Saved {len(candidates)} candidates to {cv_path}")
+        print(f"\n✅ Saved {len(candidates)} candidates to {cv_path}")
         
         # Save jobs
         job_path = JOB_DATA_FILE
@@ -738,10 +595,15 @@ The work you do will directly contribute to our clients' success and societal pr
             json.dump(jobs, f, indent=2, ensure_ascii=False)
         print(f"✅ Saved {len(jobs)} jobs to {job_path}")
         
-        # Generate statistics
-        self._print_statistics(candidates, jobs)
+        # Save applications
+        app_path = PROCESSED_DATA_DIR / "applications.json"
+        with open(app_path, 'w', encoding='utf-8') as f:
+            json.dump(applications, f, indent=2, ensure_ascii=False)
+        print(f"✅ Saved {len(applications)} applications to {app_path}")
+        
+        self._print_statistics(candidates, jobs, applications)
     
-    def _print_statistics(self, candidates: List[Dict], jobs: List[Dict]):
+    def _print_statistics(self, candidates: List[Dict], jobs: List[Dict], applications: List[Dict]):
         """Print dataset statistics"""
         print("\n" + "="*60)
         print("DATASET STATISTICS")
@@ -782,28 +644,48 @@ The work you do will directly contribute to our clients' success and societal pr
         print(f"  Distribution by Experience Level:")
         for lvl, count in sorted(job_level_dist.items(), key=lambda x: x[1], reverse=True):
             print(f"    {lvl}: {count}")
+        
+        print(f"\nAPPLICATIONS ({len(applications)} total):")
+        print(f"  Total applications: {len(applications)}")
+        print(f"  Avg per job: {len(applications)/len(jobs):.1f}")
+        print(f"  Avg per candidate: {len(applications)/len(candidates):.1f}")
 
 
 def main():
     """Main execution function"""
     print("="*60)
     print("SYNTHETIC DATA GENERATION - FORVIS MAZARS ATS")
+    print("REALISTIC APPLICATION VOLUMES")
     print("="*60)
     
     generator = SyntheticDataGenerator()
     
-    print(f"\n[1/2] Generating {NUM_SYNTHETIC_CVS} candidate profiles...")
-    candidates = generator.generate_candidates(NUM_SYNTHETIC_CVS)
+    # LARGER DATABASE: 2000 candidates, 50 jobs
+    # This gives enough candidates to fill all job applications realistically
+    num_candidates = 2000
+    num_jobs = 50
     
-    print(f"\n[2/2] Generating {NUM_SYNTHETIC_JOBS} job postings...")
-    jobs = generator.generate_jobs(NUM_SYNTHETIC_JOBS)
+    print(f"\n📊 Configuration:")
+    print(f"   Candidates: {num_candidates}")
+    print(f"   Jobs: {num_jobs}")
+    print(f"   Expected total applications: ~3,000-4,000")
     
-    print(f"\n[3/3] Saving data...")
+    print(f"\n[1/3] Generating {num_candidates} candidate profiles...")
+    candidates = generator.generate_candidates(num_candidates)
+    
+    print(f"\n[2/3] Generating {num_jobs} job postings...")
+    jobs = generator.generate_jobs(num_jobs)
+    
+    print(f"\n[3/3] Saving data with realistic applications...")
     generator.save_data(candidates, jobs)
     
     print("\n" + "="*60)
     print("✅ DATA GENERATION COMPLETE")
     print("="*60)
+    print("\nNext steps:")
+    print("  1. Run: python src/models/embedding_engine.py")
+    print("  2. Run: python src/search/faiss_indexer.py")
+    print("  3. Or: python pipeline.py (does both)")
 
 
 if __name__ == "__main__":

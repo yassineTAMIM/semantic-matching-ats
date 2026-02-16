@@ -1,6 +1,6 @@
 """
 Dormant Talent Detector - Automatically rediscover qualified past candidates
-Unique innovation: identifies candidates who applied months/years ago and may have evolved
+FIXED: Direct scoring without relying on matching_engine.match_candidates()
 """
 
 import json
@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 from pathlib import Path
 import sys
+import numpy as np
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 from config import *
@@ -38,65 +39,134 @@ class DormantTalentDetector:
     
     def detect_dormant_matches(self, job: Dict, min_score: float = DORMANT_MIN_SCORE) -> List[Dict]:
         """
-        Detect dormant candidates who match a new job posting
+        Detect dormant candidates for THIS SPECIFIC JOB
         
-        Args:
-            job: Job dictionary
-            min_score: Minimum matching score to trigger alert
-            
-        Returns:
-            List of dormant candidate matches with evolution scores
+        ⭐ FIX: Scores dormant candidates DIRECTLY without using match_candidates()
+        
+        Returns candidates who:
+        1. Did NOT apply to this job
+        2. Applied to other jobs >6 months ago
+        3. Match this job above threshold
         """
         print(f"\n{'='*60}")
         print(f"Scanning dormant candidates for: {job['title']}")
         print(f"{'='*60}")
         
-        # Get dormant candidate IDs for filtering
-        dormant_ids = {c['id'] for c in self.dormant_candidates}
+        # Load application history
+        app_path = PROCESSED_DATA_DIR / "applications.json"
+        try:
+            with open(app_path, 'r', encoding='utf-8') as f:
+                applications = json.load(f)
+        except FileNotFoundError:
+            print("⚠️  No application history found.")
+            return []
         
-        # Run matching on full pool, then filter to dormant only
-        all_matches = self.matching_engine.match_candidates(
-            job, 
-            top_k=min(len(self.dormant_candidates), 100),
-            filters=None
+        # Get candidates who already applied to THIS job
+        applied_to_this_job = {
+            app['candidate_id'] 
+            for app in applications 
+            if app['job_id'] == job['id']
+        }
+        
+        print(f"📋 {len(applied_to_this_job)} candidates already applied to this job")
+        
+        # Filter: dormant + didn't apply to THIS job
+        eligible_dormant_candidates = [
+            c for c in self.dormant_candidates
+            if c['id'] not in applied_to_this_job
+        ]
+        
+        print(f"🔍 {len(eligible_dormant_candidates)} dormant candidates eligible")
+        
+        if not eligible_dormant_candidates:
+            return []
+        
+        # ⭐ FIX: Score candidates DIRECTLY instead of calling match_candidates
+        print("Computing scores directly...")
+        
+        # Generate job embedding
+        job_text = self.matching_engine.embedding_engine.create_job_text(job)
+        job_embedding = self.matching_engine.embedding_engine.model.encode(
+            [job_text],
+            convert_to_numpy=True,
+            normalize_embeddings=True
         )
         
-        # Filter to only dormant candidates
         dormant_matches = []
         
-        for match in all_matches:
-            candidate_id = match['candidate']['id']
+        for candidate in eligible_dormant_candidates:
+            # Calculate semantic score
+            candidate_text = self.matching_engine.embedding_engine.create_cv_text(candidate)
+            candidate_embedding = self.matching_engine.embedding_engine.model.encode(
+                [candidate_text],
+                convert_to_numpy=True,
+                normalize_embeddings=True
+            )
             
-            # Skip if not dormant
-            if candidate_id not in dormant_ids:
-                continue
+            # Cosine similarity
+            semantic_score = float(np.dot(job_embedding[0], candidate_embedding[0]))
             
-            # Only process if score is above threshold
-            if match['scores']['total'] >= min_score:
-                # Calculate evolution score
-                evolution_data = self._calculate_evolution_score(match['candidate'], job)
+            # Multi-criteria scores (reuse matching engine's methods)
+            skills_score = self.matching_engine._calculate_skills_score(candidate, job)
+            experience_score = self.matching_engine._calculate_experience_score(candidate, job)
+            location_score = self.matching_engine._calculate_location_score(candidate, job)
+            
+            # Weighted total score
+            total_score = (
+                WEIGHTS["semantic"] * semantic_score +
+                WEIGHTS["skills"] * skills_score +
+                WEIGHTS["experience"] * experience_score +
+                WEIGHTS["location"] * location_score
+            )
+            
+            # Filter by minimum score
+            if total_score >= min_score:
+                # Calculate evolution data
+                evolution_data = self._calculate_evolution_score(candidate, job)
                 
-                # Add evolution data to match
-                match['evolution'] = evolution_data
-                match['is_dormant_alert'] = True
+                match_result = {
+                    "candidate": candidate,
+                    "scores": {
+                        "semantic": semantic_score,
+                        "skills": skills_score,
+                        "experience": experience_score,
+                        "location": location_score,
+                        "total": total_score,
+                        "evolution": evolution_data['score'],
+                        "total_with_evolution": total_score + (DORMANT_EVOLUTION_WEIGHT * evolution_data['score'])
+                    },
+                    "breakdown": {
+                        "semantic_similarity": {
+                            "score": semantic_score,
+                            "interpretation": "Strong alignment" if semantic_score >= 0.75 else "Moderate alignment" if semantic_score >= 0.6 else "Limited alignment"
+                        },
+                        "skills_match": {
+                            "matched_skills": self.matching_engine._get_matching_skills(candidate, job),
+                            "missing_skills": self.matching_engine._get_missing_skills(candidate, job),
+                            "score": skills_score
+                        },
+                        "experience_match": {
+                            "candidate_years": candidate['years_experience'],
+                            "required_range": f"{job['years_experience_min']}-{job['years_experience_max']}",
+                            "score": experience_score,
+                            "status": "Perfect fit" if experience_score >= 0.9 else "Good fit" if experience_score >= 0.7 else "Experience gap exists"
+                        },
+                        "location_match": {
+                            "candidate_location": candidate['location'],
+                            "job_location": job['location'],
+                            "score": location_score
+                        }
+                    },
+                    "evolution": evolution_data,
+                    "is_dormant_alert": True
+                }
                 
-                # Adjust total score with evolution bonus
-                match['scores']['evolution'] = evolution_data['score']
-                match['scores']['total_with_evolution'] = (
-                    match['scores']['total'] + 
-                    DORMANT_EVOLUTION_WEIGHT * evolution_data['score']
-                )
-                
-                dormant_matches.append(match)
+                dormant_matches.append(match_result)
         
         # Sort by total score with evolution
-        dormant_matches.sort(
-            key=lambda x: x['scores']['total_with_evolution'], 
-            reverse=True
-        )
+        dormant_matches.sort(key=lambda x: x['scores']['total_with_evolution'], reverse=True)
         
-        print(f"✅ Found {len(dormant_matches)} dormant candidates above threshold ({min_score:.2f})")
-        
+        print(f"✅ Found {len(dormant_matches)} dormant matches")
         return dormant_matches
     
     def _calculate_evolution_score(self, candidate: Dict, job: Dict) -> Dict:
