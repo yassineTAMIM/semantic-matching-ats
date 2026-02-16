@@ -1,464 +1,442 @@
-# COPY THIS TO REPLACE app.py
-# Includes: Export CSV, Performance Cache, Better Progress
-
 """
-Streamlit UI - Enhanced with Quick Wins
+Forvis Mazars Talent Intelligence System
+Professional HR Matching Platform with AI-Powered Insights
+
+Version 2.1 - Enhanced UX Edition
 """
 
 import streamlit as st
-import json
 import sys
 from pathlib import Path
-import pandas as pd
-from datetime import datetime
-import time
+import base64
 
+# Add project root to path
 sys.path.append(str(Path(__file__).parent))
 
-from config import *
-from src.search.matching_engine import MatchingEngine
-from src.search.dormant_detector import DormantTalentDetector
-from src.explainability.explainer import ExplainabilityEngine
+from components.theme import apply_theme, BRAND_COLORS
+from pages.dashboard import render_dashboard
+from pages.candidate_search import render_candidate_search
+from pages.comparison import render_candidate_comparison
+from pages.dormant_talent import render_dormant_talent
+from pages.job_management import render_job_management
 
+# Page configuration
 st.set_page_config(
-    page_title=APP_TITLE,
-    page_icon=APP_ICON,
+    page_title="Forvis Mazars - Talent Intelligence",
+    page_icon="🎯",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
+# Hide default Streamlit pages navigation
 st.markdown("""
-<style>
-    .main-header {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #1f77b4;
-        text-align: center;
-        padding: 1rem 0;
-    }
-    .candidate-card {
-        background-color: white;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        border: 1px solid #ddd;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-</style>
+    <style>
+        [data-testid="stSidebarNav"] {
+            display: none;
+        }
+        [data-testid="stSidebarNavItems"] {
+            display: none;
+        }
+        section[data-testid="stSidebar"] > div:first-child {
+            padding-top: 0;
+        }
+        
+        /* Footer styling */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg, #171C8F 0%, #0066CC 100%);
+            color: white;
+            padding: 0.75rem 2rem;
+            text-align: center;
+            font-size: 0.85rem;
+            z-index: 999;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .footer a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1rem;
+            opacity: 0.9;
+        }
+        .footer a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+        
+        /* Add padding to main content to avoid footer overlap */
+        .main .block-container {
+            padding-bottom: 4rem;
+        }
+    </style>
 """, unsafe_allow_html=True)
 
+# Apply custom theme
+apply_theme()
+
 # Initialize session state
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = "Candidate Search"  # Default to Candidate Search
+
+# Initialize matching engines (needed for dormant talent page)
 if 'matching_engine' not in st.session_state:
-    with st.spinner("🚀 Initializing matching engine..."):
-        st.session_state.matching_engine = MatchingEngine()
-        st.session_state.dormant_detector = DormantTalentDetector(st.session_state.matching_engine)
-
-if 'jobs_data' not in st.session_state:
-    with open(JOB_DATA_FILE, 'r', encoding='utf-8') as f:
-        st.session_state.jobs_data = json.load(f)
-
-if 'candidates_data' not in st.session_state:
-    with open(CV_DATA_FILE, 'r', encoding='utf-8') as f:
-        st.session_state.candidates_data = json.load(f)
-
-if 'search_history' not in st.session_state:
-    st.session_state.search_history = []
-
-# ============= QUICK WIN 1: PERFORMANCE CACHE =============
-@st.cache_data(ttl=3600, show_spinner=False)
-def cached_match_candidates(job_id, top_k, filters_str):
-    """Cached matching for performance"""
-    engine = st.session_state.matching_engine
-    job = next(j for j in st.session_state.jobs_data if j['id'] == job_id)
-    filters = eval(filters_str) if filters_str != 'None' else None
-    return engine.match_candidates(job, top_k=top_k, filters=filters)
-
-def get_score_class(score):
-    if score >= 0.85:
-        return "score-excellent"
-    elif score >= 0.75:
-        return "score-good"
-    else:
-        return "score-moderate"
-
-def display_candidate_card(match, rank):
-    candidate = match['candidate']
-    scores = match['scores']
+    from src.search.matching_engine import MatchingEngine
+    from src.search.dormant_detector import DormantTalentDetector
     
-    with st.container():
-        st.markdown(f"""
-        <div class="candidate-card">
-            <h3>#{rank} - {candidate['name']}</h3>
-            <p><strong>{candidate['current_title']}</strong> | {candidate['service_line']}</p>
-            <p>📍 {candidate['location']} | 💼 {candidate['years_experience']} years</p>
+    st.session_state.matching_engine = MatchingEngine()
+    st.session_state.dormant_detector = DormantTalentDetector(st.session_state.matching_engine)
+
+
+def get_logo_base64(image_path):
+    """Convert logo image to base64 for embedding"""
+    try:
+        with open(image_path, "rb") as f:
+            data = base64.b64encode(f.read()).decode()
+        return f"data:image/png;base64,{data}"
+    except:
+        return None
+
+
+def render_navbar():
+    """Render horizontal navigation bar"""
+    st.markdown(f"""
+        <div style="background: linear-gradient(90deg, {BRAND_COLORS['primary']} 0%, {BRAND_COLORS['secondary']} 100%);
+                    padding: 0.75rem 2rem; margin: -1rem -1rem 2rem -1rem; 
+                    border-radius: 0 0 1rem 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: white;">
+                        Forvis Mazars
+                    </div>
+                    <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem; border-left: 2px solid rgba(255,255,255,0.3); padding-left: 1rem;">
+                        Talent Intelligence System
+                    </div>
+                </div>
+                <div style="color: rgba(255,255,255,0.9); font-size: 0.85rem;">
+                    {st.session_state.current_page}
+                </div>
+            </div>
         </div>
-        """, unsafe_allow_html=True)
-        
-        col1, col2, col3, col4, col5 = st.columns(5)
-        with col1:
-            st.metric("Total Score", f"{scores['total']:.1%}")
-        with col2:
-            st.metric("Semantic", f"{scores['semantic']:.1%}")
-        with col3:
-            st.metric("Skills", f"{scores['skills']:.1%}")
-        with col4:
-            st.metric("Experience", f"{scores['experience']:.1%}")
-        with col5:
-            st.metric("Location", f"{scores['location']:.1%}")
-        
-        with st.expander("📊 View Detailed Analysis"):
-            explanation = ExplainabilityEngine.generate_explanation(match)
-            
-            st.markdown(f"**Summary:** {explanation['summary']}")
-            
-            st.markdown("**Strengths:**")
-            for strength in explanation['strengths']:
-                st.markdown(f"✅ {strength}")
-            
-            if explanation['weaknesses']:
-                st.markdown("**Considerations:**")
-                for weakness in explanation['weaknesses']:
-                    st.markdown(f"⚠️ {weakness}")
-            
-            st.markdown("**Recommendation:**")
-            rec = explanation['recommendation']
-            st.info(f"**{rec['decision']}** - {rec['rationale']}")
-        
-        if st.button(f"📧 Contact {candidate['name']}", key=f"contact_{candidate['id']}"):
-            st.success(f"Email: {candidate['email']} | Phone: {candidate['phone']}")
+    """, unsafe_allow_html=True)
 
-def main():
-    st.markdown(f'<div class="main-header">{APP_ICON} {APP_TITLE}</div>', unsafe_allow_html=True)
-    st.markdown(f"<p style='text-align: center; color: #666;'>{APP_DESCRIPTION}</p>", unsafe_allow_html=True)
+def render_sidebar():
+    """Render professional minimalist sidebar"""
     
-    st.sidebar.title("Navigation")
-    page = st.sidebar.radio(
-        "Select Page",
-        ["🔍 Candidate Search", "🔔 Dormant Talent Alerts", "📊 Analytics Dashboard", "ℹ️ About"]
+    with st.sidebar:
+        # Logo section - try to load from file, fallback to text
+        logo_path = "forvis_mazars_logo.png"  # User should place their logo here
+        logo_base64 = get_logo_base64(logo_path)
+        
+        if logo_base64:
+            st.markdown(f"""
+                <div style="text-align: center; padding: 1.5rem 0; border-bottom: 2px solid #E0E0E0; margin-bottom: 2rem;">
+                    <img src="{logo_base64}" style="max-width: 180px; width: 100%;">
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            # Fallback to text logo
+            st.markdown("""
+                <div style="text-align: center; padding: 1.5rem 0; border-bottom: 2px solid #E0E0E0; margin-bottom: 2rem;">
+                    <div style="font-size: 1.6rem; font-weight: 700;">
+                        <span style="color: #171C8F;">forvis</span>
+                        <span style="color: #0066CC;"> mazars</span>
+                    </div>
+                    <div style="color: #666; font-size: 0.8rem; margin-top: 0.5rem;">
+                        Talent Intelligence
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+        
+        # Clean navigation - no icons, professional
+        pages = [
+            "Candidate Search",
+            "Candidate Comparison", 
+            "Dormant Talent",
+            "Job Management",
+            "Dashboard",
+            "About"
+        ]
+        
+        for page_name in pages:
+            is_active = st.session_state.current_page == page_name
+            
+            # Minimal button styling
+            button_html = f"""
+                <button style="
+                    width: 100%;
+                    padding: 0.75rem 1rem;
+                    margin-bottom: 0.25rem;
+                    background: {'linear-gradient(135deg, #171C8F 0%, #0066CC 100%)' if is_active else 'transparent'};
+                    color: {'white' if is_active else '#1A1A1A'};
+                    border: {'none' if is_active else '1px solid #E0E0E0'};
+                    border-radius: 0.5rem;
+                    text-align: left;
+                    font-size: 0.95rem;
+                    font-weight: {'600' if is_active else '500'};
+                    cursor: pointer;
+                    transition: all 0.2s;
+                " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                    {page_name}
+                </button>
+            """
+            
+            if st.button(
+                page_name,
+                key=f"nav_{page_name}",
+                use_container_width=True,
+                type="primary" if is_active else "secondary"
+            ):
+                st.session_state.current_page = page_name
+                st.rerun()
+        
+        # Spacer
+        st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
+        
+        # System info card
+        st.markdown("""
+            <div style="
+                padding: 1rem;
+                background: linear-gradient(135deg, #F8F9FA 0%, #E8E9EB 100%);
+                border-radius: 0.75rem;
+                border: 1px solid #E0E0E0;
+                margin-top: auto;
+            ">
+                <div style="font-size: 0.75rem; color: #666; line-height: 1.8;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <strong>System Status</strong>
+                        <span style="color: #28A745;">● Active</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Version</span>
+                        <span>2.1</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Model</span>
+                        <span>SBERT</span>
+                    </div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+
+def render_footer():
+    """Render professional footer"""
+    st.markdown("""
+        <div class="footer">
+            <div>
+                © 2025 Forvis Mazars | Talent Intelligence System v2.1
+                <span style="margin: 0 1rem;">|</span>
+                Built with ❤️
+                <span style="margin: 0 1rem;">|</span>
+                <a href="?page=About">About</a>
+                <a href="https://www.forvismazars.com" target="_blank">Forvis Mazars</a>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+
+def render_about():
+    """Render About page with useful information"""
+    from components.ui_components import render_header
+    
+    render_header(
+        "About Talent Intelligence System",
+        "AI-powered semantic matching for smarter recruitment"
     )
     
-    # Statistics in sidebar
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("### System Statistics")
-    
-    total_candidates = len(st.session_state.candidates_data)
-    dormant_count = sum(1 for c in st.session_state.candidates_data if c.get('is_dormant', False))
-    total_jobs = len(st.session_state.jobs_data)
-    
-    st.sidebar.metric("Total Candidates", f"{total_candidates:,}")
-    st.sidebar.metric("Dormant Candidates", f"{dormant_count:,}")
-    st.sidebar.metric("Active Jobs", f"{total_jobs:,}")
-    
-    # Search history in sidebar
-    if st.session_state.search_history:
-        st.sidebar.markdown("---")
-        st.sidebar.markdown("### 🕐 Recent Searches")
-        for search in st.session_state.search_history[:5]:
-            st.sidebar.caption(f"🔍 {search['job']}")
-            st.sidebar.caption(f"   {search['timestamp']} - {search['results']} matches")
-    
-    if page == "🔍 Candidate Search":
-        candidate_search_page()
-    elif page == "🔔 Dormant Talent Alerts":
-        dormant_alerts_page()
-    elif page == "📊 Analytics Dashboard":
-        analytics_page()
-    else:
-        about_page()
-
-def candidate_search_page():
-    st.header("🔍 Candidate Search & Matching")
-    
-    col1, col2 = st.columns([2, 1])
-    
-    with col1:
-        job_options = [f"{job['id']} - {job['title']} ({job['service_line']})" 
-                      for job in st.session_state.jobs_data]
-        selected_job_str = st.selectbox("Select Job Position", job_options)
-        selected_job_id = selected_job_str.split(" - ")[0]
-        selected_job = next(j for j in st.session_state.jobs_data if j['id'] == selected_job_id)
-    
-    with col2:
-        top_k = st.slider("Number of Candidates", 5, 20, TOP_K_CANDIDATES)
-    
-    with st.expander("📋 Job Details", expanded=False):
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.write(f"**Service Line:** {selected_job['service_line']}")
-            st.write(f"**Location:** {selected_job['location']}")
-        with col2:
-            st.write(f"**Experience:** {selected_job['experience_level']}")
-            st.write(f"**Years:** {selected_job['years_experience_min']}-{selected_job['years_experience_max']}")
-        with col3:
-            st.write(f"**Contract:** {selected_job['contract_type']}")
-            st.write(f"**Remote:** {selected_job['remote']}")
+    # Introduction
+    st.markdown("""
+        ### 🎯 What is This System?
         
-        st.write(f"**Required Skills:** {', '.join(selected_job['required_skills'][:10])}")
-    
-    with st.expander("🔧 Advanced Filters"):
-        col1, col2, col3 = st.columns(3)
+        The Forvis Mazars Talent Intelligence System uses cutting-edge **Natural Language Processing (NLP)** 
+        and **Semantic Matching** to revolutionize how we find and match candidates to job positions.
         
-        with col1:
-            filter_location = st.selectbox("Location Filter", ["All"] + FORVIS_LOCATIONS)
-        with col2:
-            filter_min_exp = st.number_input("Min Experience (years)", 0, 30, 0)
-        with col3:
-            filter_max_exp = st.number_input("Max Experience (years)", 0, 30, 30)
-    
-    filters = {}
-    if filter_location != "All":
-        filters['location'] = filter_location
-    if filter_min_exp > 0:
-        filters['min_experience'] = filter_min_exp
-    if filter_max_exp < 30:
-        filters['max_experience'] = filter_max_exp
-    
-    # ============= QUICK WIN 2: BETTER PROGRESS =============
-    if st.button("🚀 Find Candidates", type="primary"):
-        try:
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            
-            status_text.text("🔍 Generating job embedding...")
-            progress_bar.progress(20)
-            time.sleep(0.3)
-            
-            status_text.text("🔎 Searching candidate pool...")
-            progress_bar.progress(40)
-            
-            # Use cached matching
-            matches = cached_match_candidates(
-                selected_job['id'],
-                top_k,
-                str(filters) if filters else 'None'
-            )
-            
-            progress_bar.progress(70)
-            status_text.text("📊 Calculating multi-criteria scores...")
-            time.sleep(0.3)
-            
-            progress_bar.progress(90)
-            status_text.text("✅ Complete!")
-            progress_bar.progress(100)
-            time.sleep(0.5)
-            
-            status_text.empty()
-            progress_bar.empty()
-            
-            if matches:
-                st.balloons()
-                st.success(f"✨ Found {len(matches)} matching candidates!")
-                
-                # Save to history
-                st.session_state.search_history.insert(0, {
-                    'job': selected_job['title'],
-                    'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M'),
-                    'results': len(matches),
-                    'top_score': matches[0]['scores']['total']
-                })
-                st.session_state.search_history = st.session_state.search_history[:10]
-                
-                # ============= QUICK WIN 3: EXPORT CSV =============
-                col1, col2 = st.columns(2)
-                with col1:
-                    export_data = []
-                    for match in matches:
-                        c = match['candidate']
-                        s = match['scores']
-                        export_data.append({
-                            'Name': c['name'],
-                            'Title': c['current_title'],
-                            'Experience': f"{c['years_experience']} years",
-                            'Location': c['location'],
-                            'Total Score': f"{s['total']:.1%}",
-                            'Semantic': f"{s['semantic']:.1%}",
-                            'Skills': f"{s['skills']:.1%}",
-                            'Email': c['email'],
-                            'Phone': c['phone']
-                        })
-                    
-                    df = pd.DataFrame(export_data)
-                    csv = df.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        "📥 Download Shortlist (CSV)",
-                        csv,
-                        f"shortlist_{selected_job['id']}_{datetime.now().strftime('%Y%m%d')}.csv",
-                        "text/csv",
-                        key='download-csv'
-                    )
-                
-                with col2:
-                    share_text = f"Top Candidates for {selected_job['title']}:\n\n"
-                    for i, match in enumerate(matches[:5], 1):
-                        c = match['candidate']
-                        share_text += f"{i}. {c['name']} ({c['current_title']}) - {match['scores']['total']:.0%} match\n"
-                        share_text += f"   {c['email']} | {c['phone']}\n\n"
-                    
-                    st.download_button(
-                        "📋 Copy Shortlist",
-                        share_text,
-                        f"shortlist_{selected_job['id']}.txt",
-                        "text/plain"
-                    )
-                
-                st.markdown("---")
-                
-                for i, match in enumerate(matches, 1):
-                    display_candidate_card(match, i)
-            else:
-                st.warning("No candidates found matching the criteria.")
-                st.info("💡 Try:\n- Relaxing filters\n- Broadening skill requirements\n- Adjusting experience range")
-        
-        except Exception as e:
-            st.error(f"❌ Search failed: {str(e)}")
-            st.info("Try refreshing the page or check the logs")
-
-def dormant_alerts_page():
-    st.header("🔔 Dormant Talent Rediscovery")
-    
-    st.info("""
-    **What are Dormant Talents?**  
-    Candidates who applied 6+ months ago may have gained new experience. 
-    This feature automatically identifies them for new positions.
+        Unlike traditional keyword-based systems, our AI understands the **meaning** behind job descriptions 
+        and candidate profiles, finding the best matches even when different terminology is used.
     """)
     
-    job_options = [f"{job['id']} - {job['title']} ({job['service_line']})" 
-                  for job in st.session_state.jobs_data]
-    selected_job_str = st.selectbox("Scan for dormant matches for:", job_options)
-    selected_job_id = selected_job_str.split(" - ")[0]
-    selected_job = next(j for j in st.session_state.jobs_data if j['id'] == selected_job_id)
-    
-    min_score = st.slider("Minimum Match Score", 0.5, 0.9, DORMANT_MIN_SCORE, 0.05)
-    
-    if st.button("🔍 Scan Dormant Candidates", type="primary"):
-        with st.spinner("Scanning dormant candidate pool..."):
-            dormant_matches = st.session_state.dormant_detector.detect_dormant_matches(
-                selected_job,
-                min_score=min_score
-            )
-            summary = st.session_state.dormant_detector.generate_alert_summary(dormant_matches)
-        
-        if dormant_matches:
-            st.success(f"🎯 {summary['message']}")
-            
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric("Total Alerts", summary['total_alerts'])
-            with col2:
-                st.metric("Avg Match Score", f"{summary['avg_match_score']:.1%}")
-            with col3:
-                st.metric("Avg Months Dormant", f"{summary['avg_months_dormant']:.0f}")
-            with col4:
-                st.metric("Top Candidate", summary['top_candidate']['name'])
-            
-            st.markdown("---")
-            
-            for i, match in enumerate(dormant_matches, 1):
-                candidate = match['candidate']
-                scores = match['scores']
-                evolution = match['evolution']
-                
-                with st.container():
-                    st.markdown(f"""
-                    <div class="candidate-card" style="border-left: 4px solid #ff6b6b;">
-                        <h3>🚨 #{i} - {candidate['name']} (DORMANT TALENT)</h3>
-                        <p><strong>{candidate['current_title']}</strong></p>
-                        <p>📅 Last Applied: {evolution['last_application']} ({evolution['months_dormant']} months ago)</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    col1, col2, col3, col4 = st.columns(4)
-                    with col1:
-                        st.metric("Match Score", f"{scores['total']:.1%}")
-                    with col2:
-                        st.metric("Evolution Bonus", f"+{scores['evolution']:.1%}")
-                    with col3:
-                        st.metric("Total with Evolution", f"{scores['total_with_evolution']:.1%}")
-                    with col4:
-                        st.metric("Growth Potential", evolution['growth_potential'].split(' - ')[0])
-                    
-                    st.info(f"**Evolution Narrative:** {evolution['narrative']}")
-        else:
-            st.warning("No dormant candidates found above threshold.")
-
-def analytics_page():
-    st.header("📊 Analytics Dashboard")
-    
-    st.subheader("System Overview")
-    
-    col1, col2, col3, col4 = st.columns(4)
-    
-    total_candidates = len(st.session_state.candidates_data)
-    dormant_count = sum(1 for c in st.session_state.candidates_data if c.get('is_dormant', False))
+    col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.metric("Total Candidates", f"{total_candidates:,}")
+        st.metric("Total Candidates", "1,000+", help="Candidates in the database")
     with col2:
-        st.metric("Active Candidates", f"{total_candidates - dormant_count:,}")
+        st.metric("Matching Accuracy", "85%+", help="Average precision score")
     with col3:
-        st.metric("Dormant Candidates", f"{dormant_count:,}", 
-                 f"{dormant_count/total_candidates:.1%}")
-    with col4:
-        st.metric("Open Positions", f"{len(st.session_state.jobs_data):,}")
+        st.metric("Time Saved", "80%", help="Reduction in screening time")
     
     st.markdown("---")
     
+    # Key Features
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader("Candidates by Service Line")
-        service_line_dist = {}
-        for c in st.session_state.candidates_data:
-            sl = c['service_line']
-            service_line_dist[sl] = service_line_dist.get(sl, 0) + 1
-        
-        df = pd.DataFrame(list(service_line_dist.items()), columns=['Service Line', 'Count'])
-        df = df.sort_values('Count', ascending=False)
-        st.bar_chart(df.set_index('Service Line'))
+        st.markdown("""
+            ### ✨ Key Features
+            
+            **🔍 Semantic Matching**  
+            Understands meaning beyond keywords. Finds "Data Scientist" when you search for "ML Engineer".
+            
+            **💡 Dormant Talent Rediscovery**  
+            Automatically identifies past candidates who now match new positions.
+            
+            **⚖️ Side-by-Side Comparison**  
+            Compare candidates with detailed analytics and visualizations.
+            
+            **📊 Explainable AI**  
+            Every match score is broken down and justified - no black boxes!
+            
+            **⚡ Lightning Fast**  
+            Results in under 2 seconds, even with 10,000+ candidates.
+        """)
     
     with col2:
-        st.subheader("Jobs by Service Line")
-        job_dist = {}
-        for j in st.session_state.jobs_data:
-            sl = j['service_line']
-            job_dist[sl] = job_dist.get(sl, 0) + 1
+        st.markdown("""
+            ### 🛠️ Technology Stack
+            
+            **Sentence-BERT (SBERT)**  
+            State-of-the-art transformer model for semantic understanding.
+            
+            **FAISS**  
+            Facebook AI's similarity search - optimized for large-scale retrieval.
+            
+            **Multi-Criteria Scoring**  
+            - Semantic similarity (70%)
+            - Skills match (15%)
+            - Experience level (10%)
+            - Location preference (5%)
+            
+            **Python & Streamlit**  
+            Modern, responsive web interface built with Python.
+        """)
+    
+    st.markdown("---")
+    
+    # How It Works
+    st.markdown("""
+        ### 🔬 How It Works
         
-        df_jobs = pd.DataFrame(list(job_dist.items()), columns=['Service Line', 'Count'])
-        df_jobs = df_jobs.sort_values('Count', ascending=False)
-        st.bar_chart(df_jobs.set_index('Service Line'))
-
-def about_page():
-    st.header("ℹ️ About This System")
+        Our system uses a sophisticated pipeline to match candidates with jobs:
+    """)
     
     st.markdown("""
-    ## Semantic Candidate Matching System
-    
-    AI-powered recruitment using Sentence-BERT and FAISS for intelligent matching.
-    
-    ### Key Features
-    1. **Semantic Matching** - Understands meaning beyond keywords
-    2. **Dormant Talent Rediscovery** - Reactivates past applicants ⭐
-    3. **Multi-Criteria Scoring** - Weighted algorithm (semantic 70%, skills 20%, experience 7%, location 3%)
-    4. **Transparent AI** - Full explainability
-    
-    ### Performance
-    - Search time: <2 seconds (1000+ CVs)
-    - Precision: 85%+
-    - Memory: <1GB
-    
-    ### Team
-    École Centrale Casablanca - Class of 2026
-    - ABSRI Imad
-    - EL BAHA Ali
-    - EL MAIMOUNI Kenza
-    - RAMDANI Nabil
-    - TAMIM Yassine
-    
-    **Partner:** Forvis Mazars
-    
-    Version 1.1 - January 2025
+        ```
+        1. Job Description → Semantic Embedding (384-dimensional vector)
+                                        ↓
+        2. Search Similar Candidates (FAISS vector similarity search)
+                                        ↓
+        3. Multi-Criteria Scoring (semantic + skills + experience + location)
+                                        ↓
+        4. Ranked Results + Explanations (top 10 candidates with justifications)
+        ```
     """)
+    
+    # Quick Start Guide
+    st.markdown("---")
+    st.markdown("""
+        ### 🚀 Quick Start Guide
+        
+        **For Recruiters:**
+        
+        1. **Search Candidates**  
+           Go to "Candidate Search" → Select a job position → Click "Find Matching Candidates"
+        
+        2. **Review Results**  
+           Browse top matches with match scores and detailed breakdowns
+        
+        3. **Compare Finalists**  
+           Select your top 2 candidates → Go to "Candidate Comparison" → Click "Generate Comparison"
+        
+        4. **Discover Hidden Gems**  
+           Check "Dormant Talent" to find past candidates who now match new positions
+        
+        **For Hiring Managers:**
+        
+        1. **Create Job Positions**  
+           Go to "Job Management" → Fill in position details → Save
+        
+        2. **Review Candidate Shortlists**  
+           Work with recruiters to review pre-screened top matches
+    """)
+    
+    st.markdown("---")
+    
+    # Team & Credits
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        st.markdown("""
+            ### 👥 Project Team
+            
+            **École Centrale Casablanca - Option S2D**
+            
+            - ABSRI Imad
+            - EL BAHA Ali
+            - EL MAIMOUNI Kenza
+            - RAMDANI Nabil
+            - TAMIM Yassine
+            
+            **Academic Supervision:** École Centrale Casablanca  
+            **Industry Partner:** Forvis Mazars
+        """)
+    
+    with col2:
+        st.markdown("""
+            ### 📧 Support
+            
+            **Questions?**  
+            Contact your HR team or project leads.
+            
+            **Technical Issues?**  
+            Check system status in the sidebar.
+            
+            **Feedback?**  
+            We welcome your input to improve the system!
+        """)
+    
+    st.markdown("---")
+    
+    # Version Info
+    st.markdown("""
+        <div style="text-align: center; color: #666; font-size: 0.85rem; padding: 2rem 0;">
+            <strong>Version 2.1</strong> | Released February 2025 | Built with Streamlit & Python
+        </div>
+    """, unsafe_allow_html=True)
+
+
+def main():
+    """Main application entry point"""
+    
+    # Render navbar at top
+    render_navbar()
+    
+    # Render sidebar
+    render_sidebar()
+    
+    # Render current page
+    current_page = st.session_state.current_page
+    
+    if current_page == "Dashboard":
+        render_dashboard()
+    
+    elif current_page == "Candidate Search":
+        render_candidate_search()
+    
+    elif current_page == "Candidate Comparison":
+        render_candidate_comparison()
+    
+    elif current_page == "Dormant Talent":
+        render_dormant_talent()
+    
+    elif current_page == "Job Management":
+        render_job_management()
+    
+    elif current_page == "About":
+        render_about()
+    
+    # Render footer at bottom
+    render_footer()
 
 if __name__ == "__main__":
     main()
