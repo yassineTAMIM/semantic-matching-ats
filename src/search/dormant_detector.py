@@ -96,7 +96,7 @@ class DormantTalentDetector:
         
         for candidate in eligible_dormant_candidates:
             # Calculate semantic score
-            candidate_text = self.matching_engine.embedding_engine.create_cv_text(candidate)
+            candidate_text = self.matching_engine.embedding_engine.create_candidate_text(candidate)
             candidate_embedding = self.matching_engine.embedding_engine.model.encode(
                 [candidate_text],
                 convert_to_numpy=True,
