@@ -125,28 +125,20 @@ def render_sidebar():
     
     with st.sidebar:
         # Logo section - try to load from file, fallback to text
-        logo_path = "forvis_mazars_logo.png"  # User should place their logo here
-        logo_base64 = get_logo_base64(logo_path)
-        
-        if logo_base64:
-            st.markdown(f"""
-                <div style="text-align: center; padding: 1.5rem 0; border-bottom: 2px solid #E0E0E0; margin-bottom: 2rem;">
-                    <img src="{logo_base64}" style="max-width: 180px; width: 100%;">
-                </div>
-            """, unsafe_allow_html=True)
-        else:
-            # Fallback to text logo
-            st.markdown("""
-                <div style="text-align: center; padding: 1.5rem 0; border-bottom: 2px solid #E0E0E0; margin-bottom: 2rem;">
-                    <div style="font-size: 1.6rem; font-weight: 700;">
-                        <span style="color: #171C8F;">forvis</span>
-                        <span style="color: #0066CC;"> mazars</span>
-                    </div>
-                    <div style="color: #666; font-size: 0.8rem; margin-top: 0.5rem;">
-                        Talent Intelligence
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
+        forvis_b64 = get_logo_base64("forvis_mazars_logo.png")
+        ecc_b64 = get_logo_base64("ecc_logo.png")
+
+        forvis_img = f'<img src="{forvis_b64}" style="height: 45px; object-fit: contain;">' if forvis_b64 else '<span style="color:#171C8F; font-weight:700; font-size:1.1rem;">forvis mazars</span>'
+        ecc_img = f'<img src="{ecc_b64}" style="height: 45px; object-fit: contain;">' if ecc_b64 else '<span style="color:#666; font-weight:700; font-size:1.1rem;">ECC</span>'
+
+        st.markdown(f"""
+            <div style="display: flex; align-items: center; justify-content: center; gap: 1rem;
+                        padding: 1.5rem 0; border-bottom: 2px solid #E0E0E0; margin-bottom: 2rem;">
+                {forvis_img}
+                <div style="width: 1px; height: 35px; background: #E0E0E0;"></div>
+                {ecc_img}
+            </div>
+        """, unsafe_allow_html=True)
         
         # Clean navigation - no icons, professional
         pages = [
