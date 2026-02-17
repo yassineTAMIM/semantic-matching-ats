@@ -162,6 +162,7 @@ def render_search_results(matches, job):
                 st.markdown(f"**Skills:** {scores['skills']:.1%}")
                 st.markdown(f"**Experience:** {scores['experience']:.1%}")
                 st.markdown(f"**Location:** {scores['location']:.1%}")
+                st.markdown(f"**Profile Score:** 60%")
             
             st.markdown("---")
             
