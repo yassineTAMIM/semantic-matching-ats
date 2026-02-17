@@ -84,12 +84,6 @@ def render_dashboard():
     
     st.markdown("---")
     
-    # Hiring funnel visualization
-    st.markdown("### 🔄 Talent Pipeline Overview")
-    render_hiring_funnel(candidates, jobs, applications)
-    
-    st.markdown("---")
-    
     # Second row: Distribution charts with insights
     col1, col2 = st.columns(2)
     
@@ -253,49 +247,6 @@ def render_dashboard():
     
     # System health & recommendations
     render_system_insights(candidates, jobs, applications)
-
-
-def render_hiring_funnel(candidates, jobs, applications):
-    """Render hiring funnel visualization"""
-    
-    total_pool = len(candidates)
-    active_pool = sum(1 for c in candidates if not c.get('is_dormant', False))
-    applied = len(applications)
-    
-    # Simulated conversion rates (in real system, track these)
-    interviewed = int(applied * 0.3)  # 30% get interviewed
-    offered = int(interviewed * 0.4)  # 40% get offers
-    hired = int(offered * 0.6)  # 60% accept
-    
-    fig = go.Figure(go.Funnel(
-        y=['Total Pool', 'Active Candidates', 'Applications', 'Interviewed', 'Offered', 'Hired'],
-        x=[total_pool, active_pool, applied, interviewed, offered, hired],
-        textposition="inside",
-        textinfo="value+percent initial",
-        marker=dict(
-            color=[BRAND_COLORS['primary'], BRAND_COLORS['secondary'], 
-                   BRAND_COLORS['info'], BRAND_COLORS['success'],
-                   BRAND_COLORS['warning'], '#28A745']
-        )
-    ))
-    
-    fig.update_layout(
-        height=400,
-        margin=dict(l=20, r=20, t=20, b=20)
-    )
-    
-    st.plotly_chart(fig, use_container_width=True, key="hiring_funnel")
-    
-    # Conversion metrics
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric("Application Rate", f"{(applied/active_pool*100):.1f}%" if active_pool > 0 else "0%")
-    with col2:
-        st.metric("Interview Rate", f"{(interviewed/applied*100):.1f}%" if applied > 0 else "0%")
-    with col3:
-        st.metric("Offer Rate", f"{(offered/interviewed*100):.1f}%" if interviewed > 0 else "0%")
-    with col4:
-        st.metric("Acceptance Rate", f"{(hired/offered*100):.1f}%" if offered > 0 else "0%")
 
 
 def render_skills_analysis(candidates, jobs):

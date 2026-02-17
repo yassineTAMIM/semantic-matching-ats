@@ -1,57 +1,57 @@
 ================================================================================
 FORVIS MAZARS ATS - MASTER TEST REPORT
 ================================================================================
-Started: 2026-02-17 01:01:15
+Started: 2026-02-17 01:09:38
 ================================================================================
 
-[01:01:15] [INFO] 
-[01:01:15] [INFO] ================================================================================
-[01:01:15] [INFO] RUNNING: Data Quality Tests
-[01:01:15] [INFO] ================================================================================
-[01:01:15] [ERROR] FAILED: Data Quality Tests (0.11s)
-[01:01:15] [INFO] 
-[01:01:15] [INFO] ================================================================================
-[01:01:15] [INFO] RUNNING: Embedding Quality Tests
-[01:01:15] [INFO] ================================================================================
-[01:01:15] [SUCCESS] PASSED: Embedding Quality Tests (0.38s)
-[01:01:15] [INFO] 
-[01:01:15] [INFO] ================================================================================
-[01:01:15] [INFO] RUNNING: Matching Engine Tests
-[01:01:15] [INFO] ================================================================================
-[01:01:19] [SUCCESS] PASSED: Matching Engine Tests (3.83s)
-[01:01:19] [INFO] 
-[01:01:19] [INFO] ================================================================================
-[01:01:19] [INFO] RUNNING: Integration Tests
-[01:01:19] [INFO] ================================================================================
-[01:01:52] [SUCCESS] PASSED: Integration Tests (32.82s)
-[01:01:52] [INFO] 
-[01:01:52] [INFO] ================================================================================
-[01:01:52] [INFO] MASTER TEST REPORT - FINAL SUMMARY
-[01:01:52] [INFO] ================================================================================
-[01:01:52] [INFO] Total Test Suites: 4
-[01:01:52] [INFO] Passed: 3
-[01:01:52] [INFO] Failed: 1
-[01:01:52] [INFO] Total Duration: 37.15s (0.62 minutes)
-[01:01:52] [INFO] 
-[01:01:52] [INFO] Detailed Results:
-[01:01:52] [ERROR]   ✗ FAIL   | Data Quality Tests                            |   0.11s
-[01:01:52] [SUCCESS]   ✓ PASS   | Embedding Quality Tests                       |   0.38s
-[01:01:52] [SUCCESS]   ✓ PASS   | Matching Engine Tests                         |   3.83s
-[01:01:52] [SUCCESS]   ✓ PASS   | Integration Tests                             |  32.82s
-[01:01:52] [INFO] 
-[01:01:52] [INFO] ================================================================================
-[01:01:52] [ERROR] 1 TEST SUITE(S) FAILED
-[01:01:52] [WARN] Review failed suites before deployment
-[01:01:52] [INFO] ================================================================================
-[01:01:52] [INFO] 
-[01:01:52] [INFO] Generated Log Files:
-[01:01:52] [INFO]   - logs\test_data_quality.txt
-[01:01:52] [INFO]   - logs\test_embeddings.txt
-[01:01:52] [INFO]   - logs\test_integration.txt
-[01:01:52] [INFO]   - logs\test_master_report.txt
-[01:01:52] [INFO]   - logs\test_matching_engine.txt
-[01:01:52] [INFO] 
-[01:01:52] [INFO] ================================================================================
-[01:01:52] [INFO] Completed: 2026-02-17 01:01:52
-[01:01:52] [INFO] Master report: C:\Users\TAMIM\Desktop\semantic-matching-ats\logs\test_master_report.txt
-[01:01:52] [INFO] ================================================================================
+[01:09:38] [INFO] 
+[01:09:38] [INFO] ================================================================================
+[01:09:38] [INFO] RUNNING: Data Quality Tests
+[01:09:38] [INFO] ================================================================================
+[01:09:38] [SUCCESS] PASSED: Data Quality Tests (0.12s)
+[01:09:38] [INFO] 
+[01:09:38] [INFO] ================================================================================
+[01:09:38] [INFO] RUNNING: Embedding Quality Tests
+[01:09:38] [INFO] ================================================================================
+[01:09:39] [SUCCESS] PASSED: Embedding Quality Tests (0.34s)
+[01:09:39] [INFO] 
+[01:09:39] [INFO] ================================================================================
+[01:09:39] [INFO] RUNNING: Matching Engine Tests
+[01:09:39] [INFO] ================================================================================
+[01:09:42] [SUCCESS] PASSED: Matching Engine Tests (3.58s)
+[01:09:42] [INFO] 
+[01:09:42] [INFO] ================================================================================
+[01:09:42] [INFO] RUNNING: Integration Tests
+[01:09:42] [INFO] ================================================================================
+[01:10:17] [SUCCESS] PASSED: Integration Tests (34.75s)
+[01:10:17] [INFO] 
+[01:10:17] [INFO] ================================================================================
+[01:10:17] [INFO] MASTER TEST REPORT - FINAL SUMMARY
+[01:10:17] [INFO] ================================================================================
+[01:10:17] [INFO] Total Test Suites: 4
+[01:10:17] [INFO] Passed: 4
+[01:10:17] [INFO] Failed: 0
+[01:10:17] [INFO] Total Duration: 38.80s (0.65 minutes)
+[01:10:17] [INFO] 
+[01:10:17] [INFO] Detailed Results:
+[01:10:17] [SUCCESS]   ✓ PASS   | Data Quality Tests                            |   0.12s
+[01:10:17] [SUCCESS]   ✓ PASS   | Embedding Quality Tests                       |   0.34s
+[01:10:17] [SUCCESS]   ✓ PASS   | Matching Engine Tests                         |   3.58s
+[01:10:17] [SUCCESS]   ✓ PASS   | Integration Tests                             |  34.75s
+[01:10:17] [INFO] 
+[01:10:17] [INFO] ================================================================================
+[01:10:17] [SUCCESS] ALL TESTS PASSED ✓✓✓
+[01:10:17] [SUCCESS] System is production-ready!
+[01:10:17] [INFO] ================================================================================
+[01:10:17] [INFO] 
+[01:10:17] [INFO] Generated Log Files:
+[01:10:17] [INFO]   - logs\test_data_quality.txt
+[01:10:17] [INFO]   - logs\test_embeddings.txt
+[01:10:17] [INFO]   - logs\test_integration.txt
+[01:10:17] [INFO]   - logs\test_master_report.txt
+[01:10:17] [INFO]   - logs\test_matching_engine.txt
+[01:10:17] [INFO] 
+[01:10:17] [INFO] ================================================================================
+[01:10:17] [INFO] Completed: 2026-02-17 01:10:17
+[01:10:17] [INFO] Master report: C:\Users\TAMIM\Desktop\semantic-matching-ats\logs\test_master_report.txt
+[01:10:17] [INFO] ================================================================================

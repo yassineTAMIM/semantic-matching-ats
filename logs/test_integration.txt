@@ -1,67 +1,67 @@
 ================================================================================
 INTEGRATION TESTS
 ================================================================================
-Started: 2026-02-17 01:01:19
+Started: 2026-02-17 01:09:42
 ================================================================================
 
-[01:01:19] [INFO] 
-[01:01:19] [INFO] ================================================================================
-[01:01:19] [INFO] SYSTEM INITIALIZATION
-[01:01:19] [INFO] ================================================================================
-[01:01:22] [INFO] Matching engine ready
-[01:01:22] [INFO] Dormant detector ready
-[01:01:22] [INFO] Test data loaded: 50 jobs, 2000 candidates
-[01:01:22] [INFO] 
-[01:01:22] [INFO] ================================================================================
-[01:01:22] [INFO] WORKFLOW TESTS
-[01:01:22] [INFO] ================================================================================
-[01:01:22] [INFO] Testing workflow for: Business Continuity Manager
-[01:01:22] [INFO] Step 2: Explanations generated
-[01:01:37] [INFO] Step 3: Dormant scan complete - 7 matches
-[01:01:37] [INFO] Complete workflow executed successfully
-[01:01:37] [PASS] ✓ Complete Recruitment Workflow
-[01:01:37] [INFO] Processing batch of 5 jobs...
-[01:01:37] [INFO] Processed 5 jobs in 0.17s (28.68 jobs/sec)
-[01:01:37] [PASS] ✓ Batch Job Processing
-[01:01:37] [INFO] Testing dormant workflow for: Corporate Social Responsibility Manager
-[01:01:52] [INFO] Found 12 dormant matches
-[01:01:52] [INFO] Generated 10 notifications
-[01:01:52] [PASS] ✓ Dormant Talent Workflow
-[01:01:52] [INFO] 
-[01:01:52] [INFO] ================================================================================
-[01:01:52] [INFO] INTEGRATION TESTS
-[01:01:52] [INFO] ================================================================================
-[01:01:52] [INFO] Tested 3 filter configurations
-[01:01:52] [PASS] ✓ Filtering Integration
-[01:01:52] [INFO] Successfully explained 5 matches
-[01:01:52] [PASS] ✓ Explainability Integration
-[01:01:52] [INFO] Data consistency verified across components
-[01:01:52] [PASS] ✓ Data Consistency
-[01:01:52] [INFO] 
-[01:01:52] [INFO] ================================================================================
-[01:01:52] [INFO] PERFORMANCE TESTS
-[01:01:52] [INFO] ================================================================================
-[01:01:52] [INFO] Simulating 10 concurrent queries...
-[01:01:52] [INFO] Completed in 0.38s
-[01:01:52] [INFO] Avg: 0.038s per query
-[01:01:52] [INFO] Throughput: 26.41 queries/sec
-[01:01:52] [PASS] ✓ Concurrent Query Simulation
-[01:01:52] [INFO] 
-[01:01:52] [INFO] ================================================================================
-[01:01:52] [INFO] ROBUSTNESS TESTS
-[01:01:52] [INFO] ================================================================================
-[01:01:52] [INFO] Handled extreme values successfully
-[01:01:52] [PASS] ✓ Error Recovery
-[01:01:52] [INFO] 
-[01:01:52] [INFO] ================================================================================
-[01:01:52] [INFO] TEST SUMMARY
-[01:01:52] [INFO] ================================================================================
-[01:01:52] [INFO] Total Tests: 8
-[01:01:52] [INFO] Passed: 8
-[01:01:52] [INFO] Failed: 0
-[01:01:52] [INFO] Duration: 32.80s
-[01:01:52] [SUCCESS] RESULT: ALL TESTS PASSED ✓
-[01:01:52] [INFO] 
-[01:01:52] [INFO] ================================================================================
-[01:01:52] [INFO] Log saved to: C:\Users\TAMIM\Desktop\semantic-matching-ats\logs\test_integration.txt
-[01:01:52] [INFO] ================================================================================
+[01:09:42] [INFO] 
+[01:09:42] [INFO] ================================================================================
+[01:09:42] [INFO] SYSTEM INITIALIZATION
+[01:09:42] [INFO] ================================================================================
+[01:09:45] [INFO] Matching engine ready
+[01:09:45] [INFO] Dormant detector ready
+[01:09:45] [INFO] Test data loaded: 50 jobs, 2000 candidates
+[01:09:45] [INFO] 
+[01:09:45] [INFO] ================================================================================
+[01:09:45] [INFO] WORKFLOW TESTS
+[01:09:45] [INFO] ================================================================================
+[01:09:45] [INFO] Testing workflow for: Business Continuity Manager
+[01:09:45] [INFO] Step 2: Explanations generated
+[01:10:01] [INFO] Step 3: Dormant scan complete - 7 matches
+[01:10:01] [INFO] Complete workflow executed successfully
+[01:10:01] [PASS] ✓ Complete Recruitment Workflow
+[01:10:01] [INFO] Processing batch of 5 jobs...
+[01:10:01] [INFO] Processed 5 jobs in 0.18s (27.57 jobs/sec)
+[01:10:01] [PASS] ✓ Batch Job Processing
+[01:10:01] [INFO] Testing dormant workflow for: Corporate Social Responsibility Manager
+[01:10:16] [INFO] Found 12 dormant matches
+[01:10:16] [INFO] Generated 10 notifications
+[01:10:16] [PASS] ✓ Dormant Talent Workflow
+[01:10:16] [INFO] 
+[01:10:16] [INFO] ================================================================================
+[01:10:16] [INFO] INTEGRATION TESTS
+[01:10:16] [INFO] ================================================================================
+[01:10:17] [INFO] Tested 3 filter configurations
+[01:10:17] [PASS] ✓ Filtering Integration
+[01:10:17] [INFO] Successfully explained 5 matches
+[01:10:17] [PASS] ✓ Explainability Integration
+[01:10:17] [INFO] Data consistency verified across components
+[01:10:17] [PASS] ✓ Data Consistency
+[01:10:17] [INFO] 
+[01:10:17] [INFO] ================================================================================
+[01:10:17] [INFO] PERFORMANCE TESTS
+[01:10:17] [INFO] ================================================================================
+[01:10:17] [INFO] Simulating 10 concurrent queries...
+[01:10:17] [INFO] Completed in 0.35s
+[01:10:17] [INFO] Avg: 0.035s per query
+[01:10:17] [INFO] Throughput: 28.38 queries/sec
+[01:10:17] [PASS] ✓ Concurrent Query Simulation
+[01:10:17] [INFO] 
+[01:10:17] [INFO] ================================================================================
+[01:10:17] [INFO] ROBUSTNESS TESTS
+[01:10:17] [INFO] ================================================================================
+[01:10:17] [INFO] Handled extreme values successfully
+[01:10:17] [PASS] ✓ Error Recovery
+[01:10:17] [INFO] 
+[01:10:17] [INFO] ================================================================================
+[01:10:17] [INFO] TEST SUMMARY
+[01:10:17] [INFO] ================================================================================
+[01:10:17] [INFO] Total Tests: 8
+[01:10:17] [INFO] Passed: 8
+[01:10:17] [INFO] Failed: 0
+[01:10:17] [INFO] Duration: 34.74s
+[01:10:17] [SUCCESS] RESULT: ALL TESTS PASSED ✓
+[01:10:17] [INFO] 
+[01:10:17] [INFO] ================================================================================
+[01:10:17] [INFO] Log saved to: C:\Users\TAMIM\Desktop\semantic-matching-ats\logs\test_integration.txt
+[01:10:17] [INFO] ================================================================================
