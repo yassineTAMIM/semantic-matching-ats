@@ -1,0 +1,72 @@
+================================================================================
+DATA QUALITY TESTS
+================================================================================
+Started: 2026-02-17 01:01:15
+================================================================================
+
+[01:01:15] [INFO] 
+[01:01:15] [INFO] ================================================================================
+[01:01:15] [INFO] LOADING TEST DATA
+[01:01:15] [INFO] ================================================================================
+[01:01:15] [INFO] Loaded 2000 candidates
+[01:01:15] [INFO] Loaded 50 jobs
+[01:01:15] [INFO] Loaded 2989 applications
+[01:01:15] [INFO] 
+[01:01:15] [INFO] ================================================================================
+[01:01:15] [INFO] SCHEMA VALIDATION TESTS
+[01:01:15] [INFO] ================================================================================
+[01:01:15] [PASS] ✓ Candidate Schema Validation
+[01:01:15] [PASS] ✓ Job Schema Validation
+[01:01:15] [PASS] ✓ Application Schema Validation
+[01:01:15] [INFO] 
+[01:01:15] [INFO] ================================================================================
+[01:01:15] [INFO] DATA INTEGRITY TESTS
+[01:01:15] [INFO] ================================================================================
+[01:01:15] [PASS] ✓ No Duplicate IDs
+[01:01:15] [PASS] ✓ Service Line Consistency
+[01:01:15] [PASS] ✓ Location Consistency
+[01:01:15] [PASS] ✓ Application References Valid
+[01:01:15] [WARN] Dormant status mismatch for CV_1288: expected=True, actual=False, days_since=181
+[01:01:15] [WARN] Dormant status mismatch for CV_1395: expected=True, actual=False, days_since=181
+[01:01:15] [WARN] Dormant status mismatch for CV_1874: expected=True, actual=False, days_since=181
+[01:01:15] [WARN] Dormant status mismatch for CV_1961: expected=True, actual=False, days_since=181
+[01:01:15] [PASS] ✓ Dormant Status Consistency
+[01:01:15] [INFO] 
+[01:01:15] [INFO] ================================================================================
+[01:01:15] [INFO] DATA QUALITY TESTS
+[01:01:15] [INFO] ================================================================================
+[01:01:15] [FAIL] ✗ Data Distributions: Only 36.6% dormant candidates, expected >50%
+[01:01:15] [PASS] ✓ Application Volumes
+[01:01:15] [INFO] 
+[01:01:15] [INFO] --------------------------------------------------------------------------------
+[01:01:15] [INFO] DATA STATISTICS
+[01:01:15] [INFO] --------------------------------------------------------------------------------
+[01:01:15] [INFO] Total Candidates: 2000
+[01:01:15] [INFO] Service Line Distribution:
+[01:01:15] [INFO]   Risk Management: 298 (14.9%)
+[01:01:15] [INFO]   Financial Advisory: 294 (14.7%)
+[01:01:15] [INFO]   Sustainability & ESG: 293 (14.6%)
+[01:01:15] [INFO]   Consulting: 290 (14.5%)
+[01:01:15] [INFO]   Digital & Technology: 283 (14.1%)
+[01:01:15] [INFO]   Audit & Assurance: 279 (14.0%)
+[01:01:15] [INFO]   Tax & Legal: 263 (13.2%)
+[01:01:15] [INFO] Experience Range: 0-30 years
+[01:01:15] [INFO] Average Experience: 9.3 years
+[01:01:15] [INFO] Dormant Candidates: 732 (36.6%)
+[01:01:15] [INFO] Total Applications: 2989
+[01:01:15] [INFO] Avg Apps per Job: 59.8
+[01:01:15] [INFO] Min Apps for Job: 11
+[01:01:15] [INFO] Max Apps for Job: 229
+[01:01:15] [INFO] 
+[01:01:15] [INFO] ================================================================================
+[01:01:15] [INFO] TEST SUMMARY
+[01:01:15] [INFO] ================================================================================
+[01:01:15] [INFO] Total Tests: 10
+[01:01:15] [INFO] Passed: 9
+[01:01:15] [INFO] Failed: 1
+[01:01:15] [INFO] Duration: 0.10s
+[01:01:15] [FAIL] RESULT: 1 TEST(S) FAILED ✗
+[01:01:15] [INFO] 
+[01:01:15] [INFO] ================================================================================
+[01:01:15] [INFO] Log saved to: C:\Users\TAMIM\Desktop\semantic-matching-ats\logs\test_data_quality.txt
+[01:01:15] [INFO] ================================================================================
